@@ -248,8 +248,8 @@ macro(ie_add_sample)
         if(c_sample)
             set(custom_filters "-readability/casting")
         endif()
-        add_cpplint_target(${IE_SAMPLE_NAME}_cpplint FOR_TARGETS ${IE_SAMPLE_NAME}
-                           CUSTOM_FILTERS ${custom_filters})
+        # add_cpplint_target(${IE_SAMPLE_NAME}_cpplint FOR_TARGETS ${IE_SAMPLE_NAME}
+        #                    CUSTOM_FILTERS ${custom_filters})
     endif()
 endmacro()
 
