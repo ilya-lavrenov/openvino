@@ -6,8 +6,8 @@
 
 #include <cpp/ie_cnn_network.h>
 #include <ie_common.h>
-#include <math.h>
 
+#include <cmath>
 #include <cassert>
 #include <map>
 #include <memory>
@@ -267,7 +267,9 @@ size_t CNNNetworkNGraphImpl::getBatchSize() const noexcept {
         auto rank = pshape.rank().get_length();
         // WA: for speech recognition and scalar layouts (copy-past from CNNNetwork)
         if ((rank == 2 || rank > 3) && pshape[0].is_static()) {
-            return pshape[0].get_length();
+            NetworkLayout layout = _inputData.at(param->get_friendly_name())->getNetworkLayout();
+            int batchDimension = std::max(layout.getBatchDimension(), 0);
+            return pshape[batchDimension].get_length();
         }
     }
     return 1;
@@ -476,7 +478,9 @@ StatusCode CNNNetworkNGraphImpl::setBatchSize(size_t size, ResponseDesc* respons
             if (rank == 0) return DescriptionBuffer(PARAMETER_MISMATCH, responseDesc) <<
                 "Cannot set batch! Function contains 0D/1D/3D parameter with unknown batch dimension placement." << ss.str();
             auto shape = parameter->get_shape();
-            shape[0] = {static_cast<size_t>(std::ceil(size * static_cast<float>(shape[0]) / static_cast<float>(getBatchSize())))};
+            NetworkLayout layout = _inputData[parameter->get_friendly_name()]->getNetworkLayout();
+            int batchDimension = std::max(layout.getBatchDimension(), 0);
+            shape[batchDimension] = {static_cast<size_t>(std::ceil(size * static_cast<float>(shape[batchDimension]) / static_cast<float>(getBatchSize())))};
             inShapes[parameter->get_friendly_name()] = shape;
         }
         ngraph::pass::Manager ssr_manager;

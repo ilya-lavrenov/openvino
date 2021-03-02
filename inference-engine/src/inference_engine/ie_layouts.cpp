@@ -3,11 +3,15 @@
 //
 
 #include "ie_layouts.h"
+#include "ie_common.h"
 
 #include <algorithm>
 #include <map>
 
 using namespace InferenceEngine;
+
+constexpr char NetworkLayout::N[];
+constexpr char NetworkLayout::ANY[];
 
 TensorDesc::TensorDesc(const Precision& precision, const SizeVector& dims, Layout layout)
     : precision(precision), blockingDesc(dims, layout) {

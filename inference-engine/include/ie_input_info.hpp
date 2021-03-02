@@ -49,6 +49,14 @@ public:
         return _inputData->getPrecision();
     }
 
+    void setNetworkLayout(const NetworkLayout & layout) {
+        _layout = layout;
+    }
+
+    NetworkLayout getNetworkLayout() const {
+        return _layout;
+    }
+
     /**
      * @brief Changes the precision of the input data provided by the user.
      *
@@ -154,6 +162,11 @@ protected:
      * @brief A smart pointer to the input data
      */
     DataPtr _inputData;
+
+    /**
+     * @brief A network layout
+     */
+    NetworkLayout _layout;
 };
 
 /**

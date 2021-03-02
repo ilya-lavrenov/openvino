@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
 
 namespace InferenceEngine {
 /**
@@ -126,6 +127,106 @@ inline std::ostream& operator<<(std::ostream& out, const Layout& p) {
     }
     return out;
 }
+
+
+class NetworkLayout {
+public:
+    static constexpr char N[] = "N";
+    static constexpr char ANY[] = "?";
+
+    explicit NetworkLayout(const std::vector<std::string> & layout = {}) : _layout(layout) {
+    }
+
+    explicit NetworkLayout(Layout layout) {
+        // empty NetworkLayout is the same as Layout::ANY
+        if (layout == Layout::ANY)
+            return;
+
+        std::stringstream stream;
+        stream << layout;
+        std::string str = stream.str();
+
+        // TODO: check this
+        if (Layout::SCALAR == layout || Layout::BLOCKED == layout) {
+            _layout.push_back(str);
+            return;
+        }
+
+        _layout.resize(str.size());
+        std::transform(str.begin(), str.end(), _layout.begin(), [] (char c) -> std::string {
+            return std::string{1, c};
+        });
+    }
+
+    bool isAny() const {
+        return !isInitialized();
+    }
+
+    bool isCompatibleWith(Layout layout) const {
+        if (isAny())
+            return true;
+
+        NetworkLayout netLayout(layout);
+
+        if (netLayout.rank() != rank())
+            return false;
+
+        for (size_t i = 0; i < rank(); ++i) {
+            if ( // blob and network layouts are different
+                netLayout._layout[i] != _layout[i] &&
+                 // and network dimension is named
+                _layout[i] != NetworkLayout::ANY)
+                return false;
+        }
+
+        return true;
+    }
+
+    operator Layout () const {
+        static std::map<std::string, Layout> networkLayout_2_layout {
+            { "NHWC", Layout::NHWC },
+            { "NCHW", Layout::NCHW },
+        };
+
+        std::string strLayout;
+        for (const auto & dim : _layout) {
+            if (dim.size() == 1) { // only single character is considered
+                strLayout += dim;
+            } else {
+                return Layout::ANY;
+            }
+        }
+
+        auto it = networkLayout_2_layout.find(strLayout);
+        return it != networkLayout_2_layout.end() ? it->second : Layout::ANY;
+    }
+
+    /**
+     * @brief Gets batch dimension index. If no batch dimension, returns -1
+     * @return Batch dimension index
+     */
+    int getBatchDimension() const {
+        for (size_t i = 0; i < rank(); ++i) {
+            if (_layout[i] == NetworkLayout::N)
+                return i;
+        }
+
+        return -1;
+    }
+
+private:
+    size_t rank() const {
+        return _layout.size();
+    }
+
+    bool isInitialized() const {
+        return rank() != 0;
+    }
+
+    // represents <"N">, <"C">, <"H">, <"W">
+    // or <"N">, <"?">, <"?">, <"?>" where "?" means that dimension is unnamed
+    std::vector<std::string> _layout = {};
+};
 
 /**
  * @enum ColorFormat
