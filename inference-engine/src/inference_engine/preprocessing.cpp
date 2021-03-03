@@ -42,12 +42,14 @@ public:
 
             InferenceEngine::TensorDesc dummyDesc(InferenceEngine::Precision::U8, dummyDims, it->second);
             auto order = dummyDesc.getBlockingDesc().getOrder();
+            std::vector<int> properOrder(dummyDims.size());
             ngraph::Shape newShape(dummyDims.size());
 
             for (size_t i = 0; i < dummyDims.size(); ++i) {
                 for (size_t j = 0; j < dummyDims.size(); ++j) {
                     if (order[j] == i) {
                         newShape[i] = pShape[j].get_length();
+                        properOrder[i] = j;
                         break;
                     }
                 }
@@ -57,16 +59,16 @@ public:
 
             auto input_order = ngraph::opset3::Constant::create(
                 ngraph::element::i32, ngraph::Shape{dummyDims.size()}, order);
-            auto new_shape = ngraph::opset3::Constant::create(
+            auto origShape = ngraph::opset3::Constant::create(
                 ngraph::element::i32, ngraph::Shape{dummyDims.size()}, pShape.get_shape());
             auto copy_param = std::make_shared<ngraph::opset3::Parameter>(
-                param->get_element_type(), newShape);
+                param->get_element_type(), pShape);
             auto transpose = std::make_shared<ngraph::opset3::Transpose>(copy_param, input_order);
-            auto reshape = std::make_shared<ngraph::opset3::Reshape>(transpose, new_shape, false);
+            auto reshape = std::make_shared<ngraph::opset3::Reshape>(transpose, origShape, false);
 
             ngraph::replace_node(param, reshape);
             transpose->set_argument(0, param);
-            param->set_partial_shape(newShape);
+            // param->set_partial_shape(newShape);
 
             // Return true as the root node was changed
             return true;
