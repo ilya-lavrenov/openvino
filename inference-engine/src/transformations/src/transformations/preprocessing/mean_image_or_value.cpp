@@ -14,7 +14,7 @@ using namespace ngraph;
 NGRAPH_RTTI_DEFINITION(ngraph::pass::AddMeanSubtract, "AddMeanSubtract", 0);
 
 ngraph::pass::AddMeanSubtract::AddMeanSubtract(const MeanMap & inputInfoMap) {
-    RUN_ON_FUNCTION_SCOPE(AddMeanSubtract);
+    MATCHER_SCOPE(AddMeanSubtract);
     auto param = ngraph::pattern::wrap_type<ngraph::opset3::Parameter>();
 
     ngraph::matcher_pass_callback callback = [=] (pattern::Matcher& m) {

@@ -14,7 +14,7 @@ using namespace ngraph;
 NGRAPH_RTTI_DEFINITION(ngraph::pass::AddStdScale, "AddStdScale", 0);
 
 ngraph::pass::AddStdScale::AddStdScale(const ScaleMap& inputInfoMap) {
-    RUN_ON_FUNCTION_SCOPE(AddStdScale);
+    MATCHER_SCOPE(AddStdScale);
     auto param = ngraph::pattern::wrap_type<ngraph::opset3::Parameter>();
 
     ngraph::matcher_pass_callback callback = [=] (pattern::Matcher& m) {

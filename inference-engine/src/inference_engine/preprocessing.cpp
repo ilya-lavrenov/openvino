@@ -4,20 +4,92 @@
 
 #include <ngraph/pass/manager.hpp>
 #include <ngraph/opsets/opset3.hpp>
+#include <ngraph/pattern/op/wrap_type.hpp>
 
 #include "transformations/preprocessing/mean_image_or_value.hpp"
 #include "transformations/preprocessing/std_scale.hpp"
 
 #include "preprocessing.hpp"
 
+class LayoutNormalization : public ngraph::pass::MatcherPass {
+public:
+    using LayoutMap = std::map<std::string, InferenceEngine::Layout>;
+    NGRAPH_RTTI_DECLARATION;
+
+    explicit LayoutNormalization(const LayoutMap& inputInfoMap) {
+        auto param = ngraph::pattern::wrap_type<ngraph::opset3::Parameter>();
+
+        ngraph::matcher_pass_callback callback = [=] (ngraph::pattern::Matcher& m) {
+            auto param = std::dynamic_pointer_cast<ngraph::opset3::Parameter>(m.get_match_root());
+            if (!param) {
+                return false;
+            }
+
+            auto it = inputInfoMap.find(param->get_friendly_name());
+            if (it == inputInfoMap.end() || it->second == InferenceEngine::Layout::ANY) {
+                return false;
+            }
+
+            auto pShape = param->get_partial_shape();
+            if (pShape.rank().is_dynamic())
+                return false;
+
+            InferenceEngine::SizeVector dummyDims(pShape.rank().get_length(), 0);
+            auto ieLayout = InferenceEngine::TensorDesc::getLayoutByDims(dummyDims);
+
+            if (it->second == ieLayout)
+                return true;
+
+            InferenceEngine::TensorDesc dummyDesc(InferenceEngine::Precision::U8, dummyDims, it->second);
+            auto order = dummyDesc.getBlockingDesc().getOrder();
+            ngraph::Shape newShape(dummyDims.size());
+
+            for (size_t i = 0; i < dummyDims.size(); ++i) {
+                for (size_t j = 0; j < dummyDims.size(); ++j) {
+                    if (order[j] == i) {
+                        newShape[i] = pShape[j].get_length();
+                        break;
+                    }
+                }
+                std::cout << order[i] << " " << newShape[i] << std::endl;
+            }
+            std::cout << std::endl;
+
+            auto input_order = ngraph::opset3::Constant::create(
+                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, order);
+            auto new_shape = ngraph::opset3::Constant::create(
+                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, pShape.get_shape());
+            auto copy_param = std::make_shared<ngraph::opset3::Parameter>(
+                param->get_element_type(), newShape);
+            auto transpose = std::make_shared<ngraph::opset3::Transpose>(copy_param, input_order);
+            auto reshape = std::make_shared<ngraph::opset3::Reshape>(transpose, new_shape, false);
+
+            ngraph::replace_node(param, reshape);
+            transpose->set_argument(0, param);
+            param->set_partial_shape(newShape);
+
+            // Return true as the root node was changed
+            return true;
+        };
+
+        // Register pattern with Parameter operation as a pattern root node
+        auto m = std::make_shared<ngraph::pattern::Matcher>(param, "LayoutNormalization");
+        // Register Matcher
+        register_matcher(m, callback);
+    }
+};
+
+NGRAPH_RTTI_DEFINITION(LayoutNormalization, "LayoutNormalization", 0);
 NGRAPH_RTTI_DEFINITION(ngraph::pass::AddPreprocessing, "AddPreprocessing", 0);
 
 ngraph::pass::AddPreprocessing::AddPreprocessing(const InferenceEngine::InputsDataMap & inputInfoMap)
-    : m_inputInfoMap(inputInfoMap) { }
+    : m_inputInfoMap(inputInfoMap) {
+}
 
 bool ngraph::pass::AddPreprocessing::run_on_function(std::shared_ptr<ngraph::Function> f) {
     ngraph::pass::AddMeanSubtract::MeanMap meanMap;
     ngraph::pass::AddStdScale::ScaleMap scaleMap;
+    LayoutNormalization::LayoutMap layoutMap;
 
     for (const auto & it : m_inputInfoMap) {
         bool has_scales = false, has_mean_values = false, has_mean_image = false;
@@ -48,6 +120,8 @@ bool ngraph::pass::AddPreprocessing::run_on_function(std::shared_ptr<ngraph::Fun
                 }
             }
         }
+
+        layoutMap[it.first] = it.second->getNetworkLayout();
 
         // no preprocessing for current input
         if (!has_mean_values && !has_scales && !has_mean_image) {
@@ -89,12 +163,14 @@ bool ngraph::pass::AddPreprocessing::run_on_function(std::shared_ptr<ngraph::Fun
     ngraph::pass::Manager manager(get_pass_config());
     auto preproc = manager.register_pass<ngraph::pass::GraphRewrite>();
 
-    if (!scaleMap.empty()) {
-        preproc->add_matcher<ngraph::pass::AddStdScale>(scaleMap);
-    }
-    if (!meanMap.empty()) {
-        preproc->add_matcher<ngraph::pass::AddMeanSubtract>(meanMap);
-    }
+    // if (!scaleMap.empty()) {
+    //     preproc->add_matcher<ngraph::pass::AddStdScale>(scaleMap);
+    // }
+    // if (!meanMap.empty()) {
+    //     preproc->add_matcher<ngraph::pass::AddMeanSubtract>(meanMap);
+    // }
+
+    preproc->add_matcher<LayoutNormalization>(layoutMap);
 
     manager.run_passes(f);
 

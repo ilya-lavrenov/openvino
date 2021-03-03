@@ -13,7 +13,7 @@ namespace InferenceEngine {
 ICNNNetwork::~ICNNNetwork() {}
 
 CNNNetwork::CNNNetwork() :
-    network(), actual(), output() {
+    network(), actual() {
 }
 
 CNNNetwork::CNNNetwork(std::shared_ptr<ICNNNetwork> network)

@@ -19,6 +19,7 @@
 #include <legacy/ie_util_internal.hpp>
 #include <legacy/graph_transformer.h>
 #include <ie_ngraph_utils.hpp>
+#include "preprocessing.hpp"
 
 #include <legacy/convert_function_to_cnn_network.hpp>
 #include <legacy/transformations/convert_opset1_to_legacy/convert_opset1_to_legacy.hpp>
@@ -121,6 +122,9 @@ static void Transformation(CNNNetwork& clonedNetwork, const Config& conf) {
     }
 
     // WA: ConvertPriorBox must be executed before the 1st ConstantFolding pass
+    manager.register_pass<ngraph::pass::VisualizeTree>("before.svg");
+    manager.register_pass<ngraph::pass::AddPreprocessing>(clonedNetwork.getInputsInfo());
+    manager.register_pass<ngraph::pass::VisualizeTree>("after.svg");
     manager.register_pass<ngraph::pass::ConvertPriorBox>();
     manager.register_pass<ngraph::pass::ConvertNMS5ToLegacyMatcher>();
     manager.register_pass<ngraph::pass::CommonOptimizations>();
@@ -309,6 +313,7 @@ static void Transformation(CNNNetwork& clonedNetwork, const Config& conf) {
     });
 
     legacyManager.run_passes(nGraphFunc);
+
 
     OV_ITT_TASK_CHAIN(taskChain, MKLDNNPlugin::itt::domains::MKLDNN_LT, "Transformation", "convertFunctionToICNNNetwork");
 

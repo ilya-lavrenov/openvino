@@ -214,11 +214,6 @@ protected:
      */
     ICNNNetwork* actual = nullptr;
     IE_SUPPRESS_DEPRECATED_END
-
-    /**
-     * @brief A pointer to output data
-     */
-    DataPtr output;
 };
 
 }  // namespace InferenceEngine

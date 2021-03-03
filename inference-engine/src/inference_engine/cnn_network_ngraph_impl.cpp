@@ -168,6 +168,7 @@ CNNNetworkNGraphImpl::CNNNetworkNGraphImpl(const CNNNetwork& network) {
         info->getPreProcess() = inputInfo.second->getPreProcess();
         info->setPrecision(inputInfo.second->getPrecision());
         info->setLayout(inputInfo.second->getLayout());
+        info->setNetworkLayout(inputInfo.second->getNetworkLayout());
         _inputData[name] = info;
     }
     IE_SUPPRESS_DEPRECATED_END

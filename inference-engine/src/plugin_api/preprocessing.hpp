@@ -26,7 +26,7 @@ class INFERENCE_ENGINE_API_CLASS(AddPreprocessing);
  *      (x - mean) * stdScale
  */
 class ngraph::pass::AddPreprocessing : public ngraph::pass::FunctionPass {
-    const InferenceEngine::InputsDataMap & m_inputInfoMap;
+    InferenceEngine::InputsDataMap m_inputInfoMap;
 public:
     NGRAPH_RTTI_DECLARATION;
     explicit AddPreprocessing(const InferenceEngine::InputsDataMap & inputInfoMap);
