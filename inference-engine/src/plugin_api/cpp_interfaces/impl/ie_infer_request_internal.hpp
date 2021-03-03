@@ -388,7 +388,6 @@ protected:
         // the BGR format by default
         const auto networkColorFormat = ColorFormat::BGR;
         const bool colorFormatSpecified = inputColorFormat != ColorFormat::RAW;
-        const Layout networkLayout = info->getNetworkLayout();
 
         auto blob_layout = [](const Blob::Ptr& b) { return b->getTensorDesc().getLayout();   };
         auto blob_prec   = [](const Blob::Ptr& b) { return b->getTensorDesc().getPrecision();};
@@ -402,7 +401,7 @@ protected:
 
         return preProcessInfo.getResizeAlgorithm() != ResizeAlgorithm::NO_RESIZE ||
                (colorFormatSpecified && inputColorFormat != networkColorFormat) ||
-               need_layout_conv || networkLayout != dst_layout ||
+               need_layout_conv ||
                (blob_prec(userBlob) != dst_prec);
     }
 

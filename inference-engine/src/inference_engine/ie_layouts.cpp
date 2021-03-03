@@ -13,6 +13,82 @@ using namespace InferenceEngine;
 constexpr char NetworkLayout::N[];
 constexpr char NetworkLayout::ANY[];
 
+NetworkLayout::NetworkLayout(const std::vector<std::string> & layout) : _layout(layout) {
+}
+
+NetworkLayout::NetworkLayout(Layout layout) {
+    // empty NetworkLayout is the same as Layout::ANY
+    if (layout == Layout::ANY)
+        return;
+
+    std::stringstream stream;
+    stream << layout;
+    std::string str = stream.str();
+
+    // TODO: check this
+    if (Layout::SCALAR == layout || Layout::BLOCKED == layout) {
+        _layout.push_back(str);
+        return;
+    }
+
+    _layout.resize(str.size());
+    std::transform(str.begin(), str.end(), _layout.begin(), [] (char c) -> std::string {
+        return std::string(1, c);
+    });
+}
+
+bool NetworkLayout::isAny() const {
+    return !isInitialized();
+}
+
+bool NetworkLayout::isCompatibleWith(Layout layout) const {
+    if (isAny())
+        return true;
+
+    NetworkLayout netLayout(layout);
+
+    if (netLayout.rank() != rank())
+        return false;
+
+    for (size_t i = 0; i < rank(); ++i) {
+        if ( // blob and network layouts are different
+            netLayout._layout[i] != _layout[i] &&
+                // and network dimension is named
+            _layout[i] != NetworkLayout::ANY)
+            return false;
+    }
+
+    return true;
+}
+
+NetworkLayout::operator Layout () const {
+    static const std::map<std::string, Layout> networkLayout_2_layout = {
+        { std::string("NHWC"), Layout::NHWC },
+        { std::string("NCHW"), Layout::NCHW }
+    };
+
+    std::string strLayout;
+    for (const auto & dim : _layout) {
+        if (dim.size() == 1) { // only single character is considered
+            strLayout += dim;
+        } else {
+            return Layout::ANY;
+        }
+    }
+
+    auto it = networkLayout_2_layout.find(strLayout);
+    return it != networkLayout_2_layout.end() ? it->second : Layout::ANY;
+}
+
+int NetworkLayout::getBatchDimension() const {
+    for (size_t i = 0; i < rank(); ++i) {
+        if (_layout[i] == NetworkLayout::N)
+            return i;
+    }
+
+    return -1;
+}
+
 TensorDesc::TensorDesc(const Precision& precision, const SizeVector& dims, Layout layout)
     : precision(precision), blockingDesc(dims, layout) {
     this->dims = dims;

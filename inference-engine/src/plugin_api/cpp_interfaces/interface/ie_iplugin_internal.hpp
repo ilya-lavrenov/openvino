@@ -66,6 +66,8 @@ inline void copyInputOutputInfo(const InputsDataMap & networkInputs, const Outpu
             copyPreProcess(it.second->getPreProcess(), newPtr->getPreProcess());
             DataPtr newData(new Data(*it.second->getInputData()));
             newPtr->setInputData(newData);
+            newPtr->setNetworkLayout(it.second->getNetworkLayout());
+            std::cout << "Copy " << it.second->getNetworkLayout() << std::endl;
         }
         _networkInputs[it.first] = newPtr;
     }

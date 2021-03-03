@@ -172,8 +172,9 @@ int main(int argc, char *argv[]) {
 
         /** Specifying the precision of input data.
          * This should be called before load of the network to the device **/
-        inputInfoItem.second->setLayout(Layout::NHWC);
+        // inputInfoItem.second->setLayout(Layout::NHWC);
         inputInfoItem.second->setPrecision(Precision::FP32);
+        inputInfoItem.second->setNetworkLayout(NetworkLayout(NHWC));
 
         //FormatReader::ReaderPtr reader(imageNames);
         cv::Mat rawImage;
@@ -230,7 +231,7 @@ int main(int argc, char *argv[]) {
             if (!outputData) {
                 throw std::logic_error("output data pointer is not valid");
             }
-            item.second->setLayout(Layout::NHWC);
+            // item.second->setLayout(Layout::NHWC);
             item.second->setPrecision(Precision::FP32);
         }
         // -----------------------------------------------------------------------------------------------------
