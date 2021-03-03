@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Intel Corporation
+// Copyright (C) 2020-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -7,6 +7,7 @@
 
 #include <hetero/hetero_plugin_config.hpp>
 #include <threading/ie_executor_manager.hpp>
+#include "preprocessing.hpp"
 
 #include <ngraph/op/util/op_types.hpp>
 #include <ngraph/graph_util.hpp>
@@ -50,12 +51,15 @@ Plugin::~Plugin() {
 
 // ! [plugin:transform_network]
 
-std::shared_ptr<ngraph::Function> TransformNetwork(const std::shared_ptr<const ngraph::Function>& function) {
+std::shared_ptr<ngraph::Function> TransformNetwork(const std::shared_ptr<const ngraph::Function>& function,
+                                                   const InferenceEngine::InputsDataMap & inputInfoMap) {
     // 1. Copy ngraph::Function first to apply some transformations which modify original ngraph::Function
     auto transformedNetwork = ngraph::clone_function(*function);
 
     // 2. Perform common optimizations and device-specific transformations
     ngraph::pass::Manager passManager;
+    // Example: register transformation to convert preprocessing information to graph nodes
+    passManager.register_pass<ngraph::pass::AddPreprocessing>(inputInfoMap);
     // Example: register CommonOptimizations transformation from transformations library
     passManager.register_pass<ngraph::pass::CommonOptimizations>();
     // Example: register plugin specific transformation
@@ -110,7 +114,8 @@ InferenceEngine::ExecutableNetworkInternal::Ptr Plugin::LoadExeNetworkImpl(const
         THROW_IE_EXCEPTION << "TEMPLATE plugin can compile only IR v10 networks";
     }
 
-    return std::make_shared<ExecutableNetwork>(function, cfg, std::static_pointer_cast<Plugin>(shared_from_this()));
+    return std::make_shared<ExecutableNetwork>(function, networkInputs, cfg,
+        std::static_pointer_cast<Plugin>(shared_from_this()));
 }
 // ! [plugin:load_exe_network_impl]
 
@@ -147,7 +152,7 @@ InferenceEngine::QueryNetworkResult Plugin::QueryNetwork(const InferenceEngine::
     }
 
     // 2. It is needed to apply all transformations as it is done in LoadExeNetworkImpl
-    auto transformedFunction = TransformNetwork(function);
+    auto transformedFunction = TransformNetwork(function, network.getInputsInfo());
 
     // 3. The same input node can be transformed into supported and unsupported backend node
     // So we need store as supported either unsupported node sets
