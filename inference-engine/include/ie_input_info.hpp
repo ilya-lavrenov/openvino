@@ -108,6 +108,9 @@ public:
      * @return A string - the name of the input
      */
     const std::string& name() const {
+        if (!_inputData) {
+            THROW_IE_EXCEPTION << "Data is empty!";
+        }
         return _inputData->getName();
     }
 
