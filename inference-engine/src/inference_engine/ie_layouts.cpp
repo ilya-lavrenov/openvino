@@ -76,6 +76,8 @@ NetworkLayout::operator Layout () const {
         }
     }
 
+    std::cout << "str layout " << strLayout << "!" << std::endl;
+
     auto it = networkLayout_2_layout.find(strLayout);
     return it != networkLayout_2_layout.end() ? it->second : Layout::ANY;
 }

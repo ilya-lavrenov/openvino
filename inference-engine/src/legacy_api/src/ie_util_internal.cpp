@@ -201,6 +201,7 @@ details::CNNNetworkImplPtr cloneNet(const CNNNetwork& origin_network) {
         auto inp = clonedInputs.find(it.first);
         if (inp != clonedInputs.end() && nullptr != inp->second) {
             inp->second->setPrecision(it.second->getPrecision());
+            inp->second->setNetworkLayout(it.second->getNetworkLayout());
             inp->second->getPreProcess() = it.second->getPreProcess();
         }
     }

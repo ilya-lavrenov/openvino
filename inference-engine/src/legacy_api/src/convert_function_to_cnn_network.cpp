@@ -2159,6 +2159,7 @@ void convertFunctionToICNNNetwork(const std::shared_ptr<const ::ngraph::Function
         auto &thisInputData = *thisInputDataMap[i.first];
         i.second->setPrecision(thisInputData.getPrecision());
         i.second->setLayout(thisInputData.getLayout());
+        i.second->setNetworkLayout(thisInputData.getNetworkLayout());
         i.second->getPreProcess() = thisInputData.getPreProcess();
     }
 }

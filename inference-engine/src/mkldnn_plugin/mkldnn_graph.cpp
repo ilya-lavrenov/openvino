@@ -214,6 +214,13 @@ void MKLDNNGraph::Replicate(const CNNNetwork &network, const MKLDNNExtensionMana
         auto inputLayer = getCreatorLayer(input.second->getInputData()).lock();
         if (inputLayer) {
             inputLayer->precision = inputLayer->outData[0]->getTensorDesc().getPrecision();
+            InferenceEngine::Layout networkLayout = input.second->getNetworkLayout();
+            if (networkLayout != InferenceEngine::Layout::ANY &&
+                networkLayout == inputLayer->outData[0]->getLayout()) {
+                InferenceEngine::Layout normalizedLayout = InferenceEngine::TensorDesc::
+                    getLayoutByDims(input.second->getTensorDesc().getDims());
+                inputLayer->outData[0]->setLayout(normalizedLayout);
+            }
         }
     }
 
@@ -356,7 +363,7 @@ void MKLDNNGraph::InitGraph() {
     }
 #endif
 
-#if !defined(NDEBUG) && defined(PRINT_GRAPH_INFO)
+// #if !defined(NDEBUG) && defined(PRINT_GRAPH_INFO)
     for (auto &graphNode : graphNodes) {
         std::cout << "name: " << graphNode->getName() << " [ ";
         if (graphNode->parentEdges.size() > 0) {
@@ -372,7 +379,7 @@ void MKLDNNGraph::InitGraph() {
         }
         std::cout << " ]"  << std::endl;
     }
-#endif
+// #endif
 
     ExecuteConstantNodesOnly();
 }
