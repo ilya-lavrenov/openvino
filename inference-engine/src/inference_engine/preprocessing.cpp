@@ -57,18 +57,20 @@ public:
             }
             std::cout << std::endl;
 
-            auto input_order = ngraph::opset3::Constant::create(
-                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, order);
-            auto origShape = ngraph::opset3::Constant::create(
-                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, pShape.get_shape());
+            // transpose
             auto copy_param = std::make_shared<ngraph::opset3::Parameter>(
                 param->get_element_type(), pShape);
+            auto input_order = ngraph::opset3::Constant::create(
+                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, order);
             auto transpose = std::make_shared<ngraph::opset3::Transpose>(copy_param, input_order);
+
+            // reshape
+            auto origShape = ngraph::opset3::Constant::create(
+                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, pShape.get_shape());
             auto reshape = std::make_shared<ngraph::opset3::Reshape>(transpose, origShape, false);
 
             ngraph::replace_node(param, reshape);
             transpose->set_argument(0, param);
-            // param->set_partial_shape(newShape);
 
             // Return true as the root node was changed
             return true;

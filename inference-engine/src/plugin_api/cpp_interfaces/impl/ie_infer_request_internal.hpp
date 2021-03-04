@@ -42,7 +42,7 @@ public:
      * @param[in]  networkOutputs  The network outputs data
      */
     InferRequestInternal(const InputsDataMap& networkInputs, const OutputsDataMap& networkOutputs): m_curBatch(-1) {
-        // // We should copy maps since they can be overriden in SetBlob with preprocess
+        // We should copy maps since they can be overriden in SetBlob with preprocess
         copyInputOutputInfo(networkInputs, networkOutputs, _networkInputs, _networkOutputs);
     }
 
