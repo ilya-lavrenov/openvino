@@ -215,11 +215,17 @@ void MKLDNNGraph::Replicate(const CNNNetwork &network, const MKLDNNExtensionMana
         if (inputLayer) {
             inputLayer->precision = inputLayer->outData[0]->getTensorDesc().getPrecision();
             InferenceEngine::Layout networkLayout = input.second->getNetworkLayout();
-            if (networkLayout != InferenceEngine::Layout::ANY &&
-                networkLayout == inputLayer->outData[0]->getLayout()) {
-                InferenceEngine::Layout normalizedLayout = InferenceEngine::TensorDesc::
-                    getLayoutByDims(input.second->getTensorDesc().getDims());
-                inputLayer->outData[0]->setLayout(normalizedLayout);
+            InferenceEngine::Layout normalizedLayout = InferenceEngine::TensorDesc::
+                getLayoutByDims(input.second->getTensorDesc().getDims());
+            InferenceEngine::Layout blobLayout = inputLayer->outData[0]->getLayout();
+            if (networkLayout != InferenceEngine::Layout::ANY) {
+                if (networkLayout == blobLayout) {
+                    inputLayer->outData[0]->setLayout(normalizedLayout);
+                } else {
+                    // TODO:
+                    // network layout NHWC
+                    // blob = input info NCHW
+                }
             }
         }
     }

@@ -388,6 +388,7 @@ protected:
         // the BGR format by default
         const auto networkColorFormat = ColorFormat::BGR;
         const bool colorFormatSpecified = inputColorFormat != ColorFormat::RAW;
+        const InferenceEngine::Layout networkLayout = info->getNetworkLayout();
 
         auto blob_layout = [](const Blob::Ptr& b) { return b->getTensorDesc().getLayout();   };
         auto blob_prec   = [](const Blob::Ptr& b) { return b->getTensorDesc().getPrecision();};
