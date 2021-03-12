@@ -10,86 +10,168 @@
 
 using namespace InferenceEngine;
 
-constexpr char NetworkLayout::N[];
-constexpr char NetworkLayout::ANY[];
+/////////////////////////////////////////////////////////////////////////////////
 
-NetworkLayout::NetworkLayout(const std::vector<std::string> & layout) : _layout(layout) {
+constexpr char NetworkLayout::BATCH[];
+constexpr char NetworkLayout::CHANNEL[];
+constexpr char NetworkLayout::HEIGHT[];
+constexpr char NetworkLayout::WIDTH[];
+constexpr char NetworkLayout::DEPTH[];
+
+NetworkLayout::NetworkLayout(const SizeVector & order) : _order(order) {
 }
 
 NetworkLayout::NetworkLayout(Layout layout) {
-    // empty NetworkLayout is the same as Layout::ANY
-    if (layout == Layout::ANY)
+    if (Layout::ANY == layout || Layout::BLOCKED == layout) {
         return;
+    } else if (Layout::SCALAR == layout) {
+        setDimensionIndexByName(SCALAR, 0);
+        return;
+    }
 
     std::stringstream stream;
-    stream << layout;
-    std::string str = stream.str();
+    stream << layout << std::endl;
+    std::string layoutStr = stream.str();
 
-    // TODO: check this
-    if (Layout::SCALAR == layout || Layout::BLOCKED == layout) {
-        _layout.push_back(str);
-        return;
+    size_t numDims = layoutStr.length() - 1;
+    TensorDesc desc(Precision::U8, SizeVector(numDims, 1), layout);
+    _order = desc.getBlockingDesc().getOrder();
+
+    // fill dimension names
+    for (size_t i = 0; i < numDims; ++i) {
+        if (layoutStr[i] == 'N')
+            setDimensionIndexByName(BATCH, i);
+        else if (layoutStr[i] == 'C')
+            setDimensionIndexByName(CHANNEL, i);
+        else if (layoutStr[i] == 'H')
+            setDimensionIndexByName(HEIGHT, i);
+        else if (layoutStr[i] == 'W')
+            setDimensionIndexByName(WIDTH, i);
+        else if (layoutStr[i] == 'D')
+            setDimensionIndexByName(DEPTH, i);
+    }
+}
+
+// can define:
+// 1. only order of dimensions "adbc"
+// 2. can define order and meaning for dimensions
+NetworkLayout::NetworkLayout(const std::string & layoutStr) {
+    bool standardLayout = std::all_of(layoutStr.cbegin(), layoutStr.cend(),
+        [] (char c) -> bool {
+            c = std::tolower(c);
+            return c == 'c' || c == 'h' || c == 'w' || c == 'n' || c == 'd';
+        });
+
+    if (standardLayout) {
+        size_t numDims = layoutStr.length();
+        TensorDesc desc(Precision::U8, SizeVector(numDims, 1), Layout::BLOCKED);
+        _order = desc.getBlockingDesc().getOrder();
+
+        // fill dimension names
+        for (size_t i = 0; i < numDims; ++i) {
+            if (layoutStr[i] == 'N')
+                setDimensionIndexByName(BATCH, i);
+            else if (layoutStr[i] == 'C')
+                setDimensionIndexByName(CHANNEL, i);
+            else if (layoutStr[i] == 'H')
+                setDimensionIndexByName(HEIGHT, i);
+            else if (layoutStr[i] == 'W')
+                setDimensionIndexByName(WIDTH, i);
+            else if (layoutStr[i] == 'D')
+                setDimensionIndexByName(DEPTH, i);
+        }
+    } else {
+        // detect ordering of "acdb"
+        // TODO:
+    }
+}
+
+bool NetworkLayout::isInitialized() const {
+    return rank() != 0 || isScalar();
+}
+
+const SizeVector & NetworkLayout::getOrder() const {
+    return _order;
+}
+
+SizeVector NetworkLayout::getNormalizingOrder() const {
+    SizeVector retVal;
+
+    if (rank() == 0) {
+        return retVal;
     }
 
-    _layout.resize(str.size());
-    std::transform(str.begin(), str.end(), _layout.begin(), [] (char c) -> std::string {
-        return std::string(1, c);
-    });
-}
-
-bool NetworkLayout::isAny() const {
-    return !isInitialized();
-}
-
-bool NetworkLayout::isCompatibleWith(Layout layout) const {
-    if (isAny())
-        return true;
-
-    NetworkLayout netLayout(layout);
-
-    if (netLayout.rank() != rank())
-        return false;
-
+    retVal.resize(rank());
     for (size_t i = 0; i < rank(); ++i) {
-        if ( // blob and network layouts are different
-            netLayout._layout[i] != _layout[i] &&
-                // and network dimension is named
-            _layout[i] != NetworkLayout::ANY)
-            return false;
-    }
-
-    return true;
-}
-
-NetworkLayout::operator Layout () const {
-    static const std::map<std::string, Layout> networkLayout_2_layout = {
-        { std::string("NHWC"), Layout::NHWC },
-        { std::string("NCHW"), Layout::NCHW }
-    };
-
-    std::string strLayout;
-    for (const auto & dim : _layout) {
-        if (dim.size() == 1) { // only single character is considered
-            strLayout += dim;
-        } else {
-            return Layout::ANY;
+        for (size_t j = 0; j < rank(); ++j) {
+            // if current layout is NHWC (0231), we can create transpose(0312)
+            if (i == _order[j]) {
+                retVal[i] = j;
+            }
         }
     }
 
-    std::cout << "str layout " << strLayout << "!" << std::endl;
-
-    auto it = networkLayout_2_layout.find(strLayout);
-    return it != networkLayout_2_layout.end() ? it->second : Layout::ANY;
+    return retVal;
 }
 
-int NetworkLayout::getBatchDimension() const {
-    for (size_t i = 0; i < rank(); ++i) {
-        if (_layout[i] == NetworkLayout::N)
-            return i;
+NetworkLayout::operator Layout () const {
+    if (!isInitialized()) {
+        return Layout::ANY;
     }
 
-    return -1;
+    BlockingDesc blockingDesc(SizeVector(rank(), 1), _order);
+    // tensor desc detects actual ie::Layout based on the _order
+    // if it cannot, then returns Layout::BLOCKED
+    TensorDesc desc(Precision::U8, SizeVector(rank(), 1), blockingDesc);
+
+    // check that autodetected dimension names match actual
+    std::stringstream stream;
+    stream << desc.getLayout();
+    std::string layoutStr = stream.str();
+
+    for (int i = 0; i < static_cast<int>(rank()); ++i) {
+        if (layoutStr[i] == 'N') {
+            if (getDimensionIndexByName(BATCH) != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'C') {
+            if (getDimensionIndexByName(CHANNEL) != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'H') {
+            if (getDimensionIndexByName(HEIGHT) != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'W') {
+            if (getDimensionIndexByName(WIDTH) != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'D') {
+            if (getDimensionIndexByName(DEPTH) != i)
+                return Layout::BLOCKED;
+        }
+    }
+
+    return desc.getLayout();
 }
+
+int NetworkLayout::getDimensionIndexByName(const std::string & name) const {
+    auto it = _dimensionNames.find(name);
+    if (it == _dimensionNames.end()) {
+        return -1; // maybe throw exception??
+    }
+    return it->second;
+}
+
+void NetworkLayout::setDimensionIndexByName(const std::string & dimensionName, int index) {
+    _dimensionNames[dimensionName] = index;
+}
+
+bool NetworkLayout::isScalar() const {
+    return getDimensionIndexByName(SCALAR) == 0;
+}
+
+size_t NetworkLayout::rank() const {
+    return _order.size();
+}
+
+/////////////////////////////////////////////////////////////////////////////
 
 TensorDesc::TensorDesc(const Precision& precision, const SizeVector& dims, Layout layout)
     : precision(precision), blockingDesc(dims, layout) {

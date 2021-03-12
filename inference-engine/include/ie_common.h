@@ -91,7 +91,7 @@ enum Layout : uint8_t {
 
     // 2D
     HW = 192,  //!< HW 2D layout
-    NC = 193,  //!< HC 2D layout
+    NC = 193,  //!< NC 2D layout
     CN = 194,  //!< CN 2D layout
 
     BLOCKED = 200,  //!< A blocked layout
@@ -111,17 +111,28 @@ inline std::ostream& operator<<(std::ostream& out, const Layout& p) {
         break;
 
         PRINT_LAYOUT(ANY);
+
         PRINT_LAYOUT(NCHW);
         PRINT_LAYOUT(NHWC);
         PRINT_LAYOUT(NCDHW);
         PRINT_LAYOUT(NDHWC);
+
         PRINT_LAYOUT(OIHW);
+        PRINT_LAYOUT(GOIHW);
+        PRINT_LAYOUT(OIDHW);
+        PRINT_LAYOUT(GOIDHW);
+
+        PRINT_LAYOUT(SCALAR);
+
         PRINT_LAYOUT(C);
+
         PRINT_LAYOUT(CHW);
         PRINT_LAYOUT(HWC);
+
         PRINT_LAYOUT(HW);
         PRINT_LAYOUT(NC);
         PRINT_LAYOUT(CN);
+
         PRINT_LAYOUT(BLOCKED);
 #undef PRINT_LAYOUT
     default:
@@ -130,40 +141,6 @@ inline std::ostream& operator<<(std::ostream& out, const Layout& p) {
     }
     return out;
 }
-
-
-class INFERENCE_ENGINE_API_CLASS(NetworkLayout) {
-public:
-    static constexpr char N[] = "N";
-    static constexpr char ANY[] = "?";
-
-    explicit NetworkLayout(const std::vector<std::string> & layout = {});
-    explicit NetworkLayout(Layout layout);
-
-    bool isAny() const;
-    bool isCompatibleWith(Layout layout) const;
-
-    operator Layout () const;
-
-    /**
-     * @brief Gets batch dimension index. If no batch dimension, returns -1
-     * @return Batch dimension index
-     */
-    int getBatchDimension() const;
-
-private:
-    size_t rank() const {
-        return _layout.size();
-    }
-
-    bool isInitialized() const {
-        return this->rank() != 0;
-    }
-
-    // represents <"N">, <"C">, <"H">, <"W">
-    // or <"N">, <"?">, <"?">, <"?>" where "?" means that dimension is unnamed
-    std::vector<std::string> _layout = {};
-};
 
 /**
  * @enum ColorFormat

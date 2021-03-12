@@ -363,4 +363,55 @@ INFERENCE_ENGINE_API_CPP(TensorDesc) make_roi_desc(
         const ROI& roi,
         bool useOrigMemDesc);
 
+class INFERENCE_ENGINE_API_CLASS(NetworkLayout) {
+public:
+    static constexpr char BATCH[] = "BATCH";
+    static constexpr char CHANNEL[] = "CHANNEL";
+    static constexpr char WIDTH[] = "WIDTH";
+    static constexpr char HEIGHT[] = "HEIGHT";
+    static constexpr char DEPTH[] = "DEPTH";
+    static constexpr char SCALAR[] = "SCALAR";
+
+    // defines nothing
+    NetworkLayout() = default;
+
+    // just defines order of dimensions: "0132"
+    explicit NetworkLayout(const SizeVector & order);
+
+    // can define:
+    // 1. only order of dimensions "adbc"
+    // 2. can define order and meaning for dimensions
+    explicit NetworkLayout(const std::string & layoutStr);
+
+    // defines:
+    // 1. order of dimensions
+    // 2. name for dimensions
+    explicit NetworkLayout(Layout layout);
+
+    // can be converted only if all dimensions are named and
+    // such ie::Layout exists
+    operator Layout () const;
+
+    // can be used to create normalized transpose
+    // e.g. if current layout is NHWC (0231), we can create transpose(0312)
+    const SizeVector & getOrder() const;
+    // returns arguments for transpose need to have 0123.. order
+    SizeVector getNormalizingOrder() const;
+
+    bool isInitialized() const;
+
+    int getDimensionIndexByName(const std::string & dimensionName) const;
+    void setDimensionIndexByName(const std::string & dimensionName, int index);
+
+    size_t rank() const;
+private:
+    bool isScalar() const;
+
+    // stores dimensions order
+    SizeVector _order;
+
+    // stores dimension names
+    std::unordered_map<std::string, int> _dimensionNames;
+};
+
 }  // namespace InferenceEngine
