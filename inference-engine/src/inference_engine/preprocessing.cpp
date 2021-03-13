@@ -13,7 +13,8 @@
 
 class LayoutNormalization : public ngraph::pass::MatcherPass {
 public:
-    using LayoutMap = std::map<std::string, InferenceEngine::Layout>;
+    using LayoutPair = std::pair<InferenceEngine::NetworkLayout, InferenceEngine::Layout>;
+    using LayoutMap = std::map<std::string, LayoutPair>;
     NGRAPH_RTTI_DECLARATION;
 
     explicit LayoutNormalization(const LayoutMap& inputInfoMap) {
@@ -26,51 +27,48 @@ public:
             }
 
             auto it = inputInfoMap.find(param->get_friendly_name());
-            if (it == inputInfoMap.end() || it->second == InferenceEngine::Layout::ANY) {
+            if (it == inputInfoMap.end()) {
                 return false;
             }
 
-            auto pShape = param->get_partial_shape();
-            if (pShape.rank().is_dynamic())
+            InferenceEngine::NetworkLayout nLayout = it->second.first;
+            InferenceEngine::Layout blobLayout = it->second.second;
+
+            // layouts are consistent
+            if (!nLayout.isInitialized() || nLayout == blobLayout)
                 return false;
 
-            InferenceEngine::SizeVector dummyDims(pShape.rank().get_length(), 0);
-            auto ieLayout = InferenceEngine::TensorDesc::getLayoutByDims(dummyDims);
+            // InferenceEngine::TensorDesc dummyDesc(InferenceEngine::Precision::U8, dummyDims, it->second);
+            // auto order = dummyDesc.getBlockingDesc().getOrder();
+            // std::vector<int> properOrder(dummyDims.size());
+            // ngraph::Shape newShape(dummyDims.size());
 
-            if (it->second == ieLayout)
-                return true;
+            // for (size_t i = 0; i < dummyDims.size(); ++i) {
+            //     for (size_t j = 0; j < dummyDims.size(); ++j) {
+            //         if (order[j] == i) {
+            //             newShape[i] = pShape[j].get_length();
+            //             properOrder[i] = j;
+            //             break;
+            //         }
+            //     }
+            //     std::cout << order[i] << " " << newShape[i] << std::endl;
+            // }
+            // std::cout << std::endl;
 
-            InferenceEngine::TensorDesc dummyDesc(InferenceEngine::Precision::U8, dummyDims, it->second);
-            auto order = dummyDesc.getBlockingDesc().getOrder();
-            std::vector<int> properOrder(dummyDims.size());
-            ngraph::Shape newShape(dummyDims.size());
+            // // transpose
+            // auto copy_param = std::make_shared<ngraph::opset3::Parameter>(
+            //     param->get_element_type(), pShape);
+            // auto input_order = ngraph::opset3::Constant::create(
+            //     ngraph::element::i32, ngraph::Shape{dummyDims.size()}, order);
+            // auto transpose = std::make_shared<ngraph::opset3::Transpose>(copy_param, input_order);
 
-            for (size_t i = 0; i < dummyDims.size(); ++i) {
-                for (size_t j = 0; j < dummyDims.size(); ++j) {
-                    if (order[j] == i) {
-                        newShape[i] = pShape[j].get_length();
-                        properOrder[i] = j;
-                        break;
-                    }
-                }
-                std::cout << order[i] << " " << newShape[i] << std::endl;
-            }
-            std::cout << std::endl;
+            // // reshape
+            // auto origShape = ngraph::opset3::Constant::create(
+            //     ngraph::element::i32, ngraph::Shape{dummyDims.size()}, pShape.get_shape());
+            // auto reshape = std::make_shared<ngraph::opset3::Reshape>(transpose, origShape, false);
 
-            // transpose
-            auto copy_param = std::make_shared<ngraph::opset3::Parameter>(
-                param->get_element_type(), pShape);
-            auto input_order = ngraph::opset3::Constant::create(
-                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, order);
-            auto transpose = std::make_shared<ngraph::opset3::Transpose>(copy_param, input_order);
-
-            // reshape
-            auto origShape = ngraph::opset3::Constant::create(
-                ngraph::element::i32, ngraph::Shape{dummyDims.size()}, pShape.get_shape());
-            auto reshape = std::make_shared<ngraph::opset3::Reshape>(transpose, origShape, false);
-
-            ngraph::replace_node(param, reshape);
-            transpose->set_argument(0, param);
+            // ngraph::replace_node(param, reshape);
+            // transpose->set_argument(0, param);
 
             // Return true as the root node was changed
             return true;
@@ -125,7 +123,7 @@ bool ngraph::pass::AddPreprocessing::run_on_function(std::shared_ptr<ngraph::Fun
             }
         }
 
-        layoutMap[it.first] = it.second->getNetworkLayout();
+        layoutMap[it.first] = std::make_pair(it.second->getNetworkLayout(), it.second->getLayout());
 
         // no preprocessing for current input
         if (!has_mean_values && !has_scales && !has_mean_image) {

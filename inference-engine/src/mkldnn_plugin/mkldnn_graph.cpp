@@ -220,19 +220,22 @@ void MKLDNNGraph::Replicate(const CNNNetwork &network, const MKLDNNExtensionMana
         auto inputLayer = getCreatorLayer(input.second->getInputData()).lock();
         if (inputLayer) {
             inputLayer->precision = inputLayer->outData[0]->getTensorDesc().getPrecision();
-            InferenceEngine::Layout networkLayout = input.second->getNetworkLayout();
             InferenceEngine::Layout normalizedLayout = InferenceEngine::TensorDesc::
                 getLayoutByDims(input.second->getTensorDesc().getDims());
-            InferenceEngine::Layout blobLayout = inputLayer->outData[0]->getLayout();
-            if (networkLayout != InferenceEngine::Layout::ANY) {
-                if (networkLayout == blobLayout) {
-                    inputLayer->outData[0]->setLayout(normalizedLayout);
-                } else {
-                    // TODO:
-                    // network layout NHWC
-                    // blob = input info NCHW
-                }
-            }
+            inputLayer->outData[0]->setLayout(normalizedLayout);
+            // InferenceEngine::Layout networkLayout = input.second->getNetworkLayout();
+            // InferenceEngine::Layout normalizedLayout = InferenceEngine::TensorDesc::
+            //     getLayoutByDims(input.second->getTensorDesc().getDims());
+            // InferenceEngine::Layout blobLayout = inputLayer->outData[0]->getLayout();
+            // if (networkLayout != InferenceEngine::Layout::ANY) {
+            //     if (networkLayout == blobLayout) {
+            //         inputLayer->outData[0]->setLayout(normalizedLayout);
+            //     } else {
+            //         // TODO:
+            //         // network layout NHWC
+            //         // blob = input info NCHW
+            //     }
+            // }
         }
     }
 
