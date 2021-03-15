@@ -21,6 +21,7 @@ static constexpr char HEIGHT[] = "HEIGHT";
 static constexpr char DEPTH[] = "DEPTH";
 static constexpr char SCALAR[] = "SCALAR";
 static constexpr char ANY[] = "ANY";
+static constexpr char BLOCKED[] = "BLOCKED";
 
 PartialLayout::PartialLayout(const SizeVector & order) : _order(order) {
 }
@@ -36,10 +37,6 @@ PartialLayout::PartialLayout(const std::string & layoutStr) {
 // 1. order of dimensions
 // 2. name for dimensions
 PartialLayout::PartialLayout(Layout layout) {
-    if (layout == Layout::BLOCKED) {
-        THROW_IE_EXCEPTION << "Cannot create from InferenceEngine::Layout::BLOCKED";
-    }
-
     std::stringstream stream;
     stream << layout << std::endl;
 
@@ -48,7 +45,7 @@ PartialLayout::PartialLayout(Layout layout) {
 
 void PartialLayout::initFromStr(const std::string & _layoutStr) {
     if (_layoutStr.empty()) {
-        THROW_IE_EXCEPTION << "Cannot parse PartialLayout from an empty string";
+        THROW_IE_EXCEPTION << "Cannot parse InferenceEngine::PartialLayout from an empty string";
     }
 
     std::string layoutStr = _layoutStr;
@@ -61,18 +58,19 @@ void PartialLayout::initFromStr(const std::string & _layoutStr) {
     } else if (layoutStr == ::ANY) {
         // nothing to do
         return;
+    } else if (layoutStr == ::BLOCKED) {
+        THROW_IE_EXCEPTION << "Cannot create from InferenceEngine::Layout::BLOCKED";
     }
 
+    const size_t numDims = layoutStr.length();
     // if it's NCDHW-like variations
     const bool ncdhwLikeLayout = std::all_of(layoutStr.cbegin(), layoutStr.cend(),
         [] (char c) -> bool {
             return c == 'C' || c == 'H' || c == 'W' ||
-                   c == 'N' || c == 'D';
+                   c == 'N' || c == 'D' || c == '?';
         });
 
-    auto setDimensionNames = [&layoutStr, this] () {
-        const size_t numDims = layoutStr.length();
-
+    auto setDimensionNames = [&layoutStr, numDims, this] () {
         // fill dimension names
         for (size_t i = 0; i < numDims; ++i) {
             if (layoutStr[i] == 'N')
@@ -91,29 +89,43 @@ void PartialLayout::initFromStr(const std::string & _layoutStr) {
     if (ncdhwLikeLayout) {
         // set only names for dimensions
         setDimensionNames();
+    }
 
+    auto parseOrder = [&layoutStr, numDims, ncdhwLikeLayout, this] (const std::string & refFullOrder) {
         // only if it's fully specified, we can detect the order
-        bool isLayoutFullySpecialized = layoutStr.find('?') == std::string::npos;
+        const bool isLayoutFullySpecialized = layoutStr.find('?') == std::string::npos;
 
         if (isLayoutFullySpecialized) {
-            const size_t numDims = layoutStr.length();
-            std::string refFullOrder = "NCDHW", refOrder;
+            std::string refOrder;
 
             std::copy_if(refFullOrder.begin(), refFullOrder.end(),
                 std::back_inserter(refOrder), [&layoutStr] (char dim) -> bool {
                     return layoutStr.find(dim) != std::string::npos;
                 });
 
-            _order.resize(numDims);
+            const size_t SPECIAL_VALUE = 100000;
+            _order.resize(numDims, SPECIAL_VALUE);
             for (size_t i = 0; i < numDims; ++i) {
                 for (size_t j = 0; j < numDims; ++j)
                     if (refOrder[j] == layoutStr[i]) {
                         _order[i] = j;
+                        break;
                     }
             }
+        } else if (!ncdhwLikeLayout) {
+            THROW_IE_EXCEPTION << "Cannot parse PartialLayout from " << layoutStr;
         }
+    };
+
+    if (ncdhwLikeLayout) {
+        parseOrder("NCDHW");
     } else {
-        THROW_IE_EXCEPTION << "Cannot parse " << layoutStr << " layout notation";
+        // parse ABCD... like order
+        std::string refFullOrder(numDims, 'A');
+        for (size_t i = 1; i < numDims; ++i) {
+            refFullOrder[i] += i;
+        }
+        parseOrder(refFullOrder);
     }
 }
 
@@ -204,6 +216,7 @@ SizeVector PartialLayout::convertToOrder(const SizeVector & toOrder) const {
             // if current layout is NHWC (0231), we can create transpose(0312)
             if (toOrder[i] == _order[j]) {
                 retVal[i] = j;
+                break;
             }
         }
     }

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2020 Intel Corporation
+// Copyright (C) 2018-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -9,7 +9,6 @@
  */
 #pragma once
 
-#include <iostream>
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
@@ -17,7 +16,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <sstream>
 
 #include "ie_api.h"
 

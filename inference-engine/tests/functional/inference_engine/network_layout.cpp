@@ -73,6 +73,37 @@ TEST_F(PartialLayoutTests, smoke_createBlocked) {
     EXPECT_EQ(Layout::BLOCKED, layout);
 }
 
+TEST_F(PartialLayoutTests, smoke_createABCD_order) {
+    PartialLayout layout("ACDB");
+    EXPECT_EQ(Layout::BLOCKED, layout);
+    EXPECT_EQ(4, layout.getOrder().size());
+
+    const SizeVector refOrder = SizeVector{0, 2, 3, 1};
+    EXPECT_EQ(refOrder, layout.getOrder());
+
+    EXPECT_NO_THROW(layout.setBatch(0));
+    EXPECT_NO_THROW(layout.setChannels(3));
+    EXPECT_NO_THROW(layout.setHeight(1));
+    EXPECT_NO_THROW(layout.setWidth(2));
+    ASSERT_EQ(Layout::NHWC, layout);
+}
+
+TEST_F(PartialLayoutTests, smoke_createACBDxx) {
+    ASSERT_THROW(PartialLayout("ABCD??"), details::InferenceEngineException);
+}
+
+TEST_F(PartialLayoutTests, smoke_PartialLayoutNCxx) {
+    PartialLayout layout("NC??");
+    EXPECT_EQ(Layout::ANY, layout);
+    EXPECT_EQ(0, layout.getOrder().size());
+
+    EXPECT_TRUE(layout.hasBatch());
+    EXPECT_TRUE(layout.hasChannels());
+
+    EXPECT_EQ(0, layout.batch());
+    EXPECT_EQ(1, layout.channels());
+}
+
 using PartialLayoutParamTests = ::testing::TestWithParam<Layout>;
 
 TEST_P(PartialLayoutParamTests, createFromLayout) {
