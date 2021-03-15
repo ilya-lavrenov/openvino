@@ -363,55 +363,72 @@ INFERENCE_ENGINE_API_CPP(TensorDesc) make_roi_desc(
         const ROI& roi,
         bool useOrigMemDesc);
 
-class INFERENCE_ENGINE_API_CLASS(NetworkLayout) {
+class INFERENCE_ENGINE_API_CLASS(PartialLayout) {
 public:
-    static constexpr char BATCH[] = "BATCH";
-    static constexpr char CHANNEL[] = "CHANNEL";
-    static constexpr char WIDTH[] = "WIDTH";
-    static constexpr char HEIGHT[] = "HEIGHT";
-    static constexpr char DEPTH[] = "DEPTH";
-    static constexpr char SCALAR[] = "SCALAR";
-
-    // defines nothing
-    NetworkLayout() = default;
-
-    // just defines order of dimensions: "0132"
-    explicit NetworkLayout(const SizeVector & order);
-
-    // can define:
-    // 1. only order of dimensions "adbc"
-    // 2. can define order and meaning for dimensions
-    explicit NetworkLayout(const std::string & layoutStr);
-
     // defines:
     // 1. order of dimensions
     // 2. name for dimensions
-    explicit NetworkLayout(Layout layout);
+    explicit PartialLayout(Layout layout = Layout::ANY);
+
+    // just defines order of dimensions: "0132"
+    explicit PartialLayout(const SizeVector & order);
+
+    // can define:
+    // 1. only order of dimensions "adbc" (0312)
+    // 2. can define order and meaning for dimensions "NCHW"
+    // 3. partial layout specialization "NC?"
+    explicit PartialLayout(const std::string & layoutStr);
 
     // can be converted only if all dimensions are named and
     // such ie::Layout exists
-    operator Layout () const;
+    operator InferenceEngine::Layout () const;
 
     // can be used to create normalized transpose
-    // e.g. if current layout is NHWC (0231), we can create transpose(0312)
     const SizeVector & getOrder() const;
-    // returns arguments for transpose need to have 0123.. order
-    SizeVector getNormalizingOrder() const;
 
-    bool isInitialized() const;
+    // returns arguments for transpose need to have `newOrder` order
+    // e.g. if current layout is NHWC (0231), but we want NCHW(0123), we can create transpose(0312)
+    SizeVector convertToOrder(const SizeVector & newOrder) const;
 
-    int getDimensionIndexByName(const std::string & dimensionName) const;
-    void setDimensionIndexByName(const std::string & dimensionName, int index);
+    ///
+    /// Particular dimensions
+    ///
 
-    size_t rank() const;
+    bool hasBatch() const;
+    size_t batch() const;
+    void setBatch(size_t index);
+
+    bool hasChannels() const;
+    size_t channels() const;
+    void setChannels(size_t index);
+
+    bool hasDepth() const;
+    size_t depth() const;
+    void setDepth(size_t index);
+
+    bool hasHeight() const;
+    size_t height() const;
+    void setHeight(size_t index);
+
+    bool hasWidth() const;
+    size_t width() const;
+    void setWidth(size_t index);
+
 private:
+    size_t rank() const;
+    bool isInitialized() const;
     bool isScalar() const;
+
+    void initFromStr(const std::string & layoutStr);
+
+    size_t getDimensionIndexByName(const std::string & dimensionName) const;
+    void setDimensionIndexByName(const std::string & dimensionName, size_t index);
 
     // stores dimensions order
     SizeVector _order;
 
     // stores dimension names
-    std::unordered_map<std::string, int> _dimensionNames;
+    std::unordered_map<std::string, size_t> _dimensionNames;
 };
 
 }  // namespace InferenceEngine

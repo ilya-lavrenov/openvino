@@ -49,11 +49,15 @@ public:
         return _inputData->getPrecision();
     }
 
-    void setNetworkLayout(const NetworkLayout & layout) {
+    void setNetworkLayout(const PartialLayout & layout) {
+        // TODO:
+        // _inputData->setNetworkLayout(layout);
         _layout = layout;
     }
 
-    NetworkLayout getNetworkLayout() const {
+    PartialLayout getNetworkLayout() const {
+        // TODO:
+        // return _inputData->getNetworkLayout();
         return _layout;
     }
 
@@ -169,7 +173,7 @@ protected:
     /**
      * @brief A network layout
      */
-    NetworkLayout _layout;
+    PartialLayout _layout;
 };
 
 /**

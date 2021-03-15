@@ -1,9 +1,11 @@
-// Copyright (C) 2018-2020 Intel Corporation
+// Copyright (C) 2018-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #include "ie_layouts.h"
 #include "ie_common.h"
+
+#include "debug.h"
 
 #include <algorithm>
 #include <map>
@@ -12,89 +14,184 @@ using namespace InferenceEngine;
 
 /////////////////////////////////////////////////////////////////////////////////
 
-constexpr char NetworkLayout::BATCH[];
-constexpr char NetworkLayout::CHANNEL[];
-constexpr char NetworkLayout::HEIGHT[];
-constexpr char NetworkLayout::WIDTH[];
-constexpr char NetworkLayout::DEPTH[];
+static constexpr char BATCH[] = "BATCH";
+static constexpr char CHANNELS[] = "CHANNELS";
+static constexpr char WIDTH[] = "WIDTH";
+static constexpr char HEIGHT[] = "HEIGHT";
+static constexpr char DEPTH[] = "DEPTH";
+static constexpr char SCALAR[] = "SCALAR";
+static constexpr char ANY[] = "ANY";
 
-NetworkLayout::NetworkLayout(const SizeVector & order) : _order(order) {
+PartialLayout::PartialLayout(const SizeVector & order) : _order(order) {
 }
 
-NetworkLayout::NetworkLayout(Layout layout) {
-    if (Layout::ANY == layout || Layout::BLOCKED == layout) {
-        return;
-    } else if (Layout::SCALAR == layout) {
-        setDimensionIndexByName(SCALAR, 0);
-        return;
+// 1. only order of dimensions "adbc" (0312)
+// 2. can define order and meaning for dimensions "NCHW"
+// 3. partial layout specialization "NC?"
+PartialLayout::PartialLayout(const std::string & layoutStr) {
+    initFromStr(layoutStr);
+}
+
+// defines:
+// 1. order of dimensions
+// 2. name for dimensions
+PartialLayout::PartialLayout(Layout layout) {
+    if (layout == Layout::BLOCKED) {
+        THROW_IE_EXCEPTION << "Cannot create from InferenceEngine::Layout::BLOCKED";
     }
 
     std::stringstream stream;
     stream << layout << std::endl;
-    std::string layoutStr = stream.str();
 
-    size_t numDims = layoutStr.length() - 1;
-    TensorDesc desc(Precision::U8, SizeVector(numDims, 1), layout);
-    _order = desc.getBlockingDesc().getOrder();
-
-    // fill dimension names
-    for (size_t i = 0; i < numDims; ++i) {
-        if (layoutStr[i] == 'N')
-            setDimensionIndexByName(BATCH, i);
-        else if (layoutStr[i] == 'C')
-            setDimensionIndexByName(CHANNEL, i);
-        else if (layoutStr[i] == 'H')
-            setDimensionIndexByName(HEIGHT, i);
-        else if (layoutStr[i] == 'W')
-            setDimensionIndexByName(WIDTH, i);
-        else if (layoutStr[i] == 'D')
-            setDimensionIndexByName(DEPTH, i);
-    }
+    initFromStr(stream.str());
 }
 
-// can define:
-// 1. only order of dimensions "adbc"
-// 2. can define order and meaning for dimensions
-NetworkLayout::NetworkLayout(const std::string & layoutStr) {
-    bool standardLayout = std::all_of(layoutStr.cbegin(), layoutStr.cend(),
+void PartialLayout::initFromStr(const std::string & _layoutStr) {
+    if (_layoutStr.empty()) {
+        THROW_IE_EXCEPTION << "Cannot parse PartialLayout from an empty string";
+    }
+
+    std::string layoutStr = _layoutStr;
+    details::trim(layoutStr);
+
+    // special case
+    if (layoutStr == ::SCALAR) {
+        setDimensionIndexByName(::SCALAR, 0);
+        return;
+    } else if (layoutStr == ::ANY) {
+        // nothing to do
+        return;
+    }
+
+    // if it's NCDHW-like variations
+    const bool ncdhwLikeLayout = std::all_of(layoutStr.cbegin(), layoutStr.cend(),
         [] (char c) -> bool {
-            c = std::tolower(c);
-            return c == 'c' || c == 'h' || c == 'w' || c == 'n' || c == 'd';
+            return c == 'C' || c == 'H' || c == 'W' ||
+                   c == 'N' || c == 'D';
         });
 
-    if (standardLayout) {
-        size_t numDims = layoutStr.length();
-        TensorDesc desc(Precision::U8, SizeVector(numDims, 1), Layout::BLOCKED);
-        _order = desc.getBlockingDesc().getOrder();
+    auto setDimensionNames = [&layoutStr, this] () {
+        const size_t numDims = layoutStr.length();
 
         // fill dimension names
         for (size_t i = 0; i < numDims; ++i) {
             if (layoutStr[i] == 'N')
                 setDimensionIndexByName(BATCH, i);
             else if (layoutStr[i] == 'C')
-                setDimensionIndexByName(CHANNEL, i);
+                setDimensionIndexByName(CHANNELS, i);
+            else if (layoutStr[i] == 'D')
+                setDimensionIndexByName(DEPTH, i);
             else if (layoutStr[i] == 'H')
                 setDimensionIndexByName(HEIGHT, i);
             else if (layoutStr[i] == 'W')
                 setDimensionIndexByName(WIDTH, i);
-            else if (layoutStr[i] == 'D')
-                setDimensionIndexByName(DEPTH, i);
+        }
+    };
+
+    if (ncdhwLikeLayout) {
+        // set only names for dimensions
+        setDimensionNames();
+
+        // only if it's fully specified, we can detect the order
+        bool isLayoutFullySpecialized = layoutStr.find('?') == std::string::npos;
+
+        if (isLayoutFullySpecialized) {
+            const size_t numDims = layoutStr.length();
+            std::string refFullOrder = "NCDHW", refOrder;
+
+            std::copy_if(refFullOrder.begin(), refFullOrder.end(),
+                std::back_inserter(refOrder), [&layoutStr] (char dim) -> bool {
+                    return layoutStr.find(dim) != std::string::npos;
+                });
+
+            _order.resize(numDims);
+            for (size_t i = 0; i < numDims; ++i) {
+                for (size_t j = 0; j < numDims; ++j)
+                    if (refOrder[j] == layoutStr[i]) {
+                        _order[i] = j;
+                    }
+            }
         }
     } else {
-        // detect ordering of "acdb"
-        // TODO:
+        THROW_IE_EXCEPTION << "Cannot parse " << layoutStr << " layout notation";
     }
 }
 
-bool NetworkLayout::isInitialized() const {
-    return rank() != 0 || isScalar();
+PartialLayout::operator Layout () const {
+    if (!isInitialized()) {
+        return Layout::ANY;
+    }
+
+    Layout layout = Layout::BLOCKED;
+    switch (_order.size()) {
+    case 0:
+        layout = Layout::SCALAR;
+        break;
+    case 1:
+        layout = Layout::C;
+        break;
+    case 2:
+        if (_order[0] == 0 && _order[1] == 1)
+            layout = hasBatch() ? Layout::NC : Layout::HW;
+        else
+            layout = Layout::CN;
+        break;
+    case 3:
+        if (_order[0] == 0 && _order[1] == 1 && _order[2] == 2) {
+            layout = Layout::CHW;
+        } else if (_order[0] == 1 && _order[1] == 2 && _order[2] == 0) {
+            layout = Layout::HWC;
+        }
+        break;
+    case 4:
+        if (_order[0] == 0 && _order[1] == 1 && _order[2] == 2 && _order[3] == 3) {
+            layout = Layout::NCHW;
+        } else if (_order[0] == 0 && _order[1] == 2 && _order[2] == 3 && _order[3] == 1) {
+            layout = Layout::NHWC;
+        }
+        break;
+    case 5:
+        if (_order[0] == 0 && _order[1] == 1 && _order[2] == 2 && _order[3] == 3 && _order[4] == 4) {
+            layout = Layout::NCDHW;
+        } else if (_order[0] == 0 && _order[1] == 2 && _order[2] == 3 && _order[3] == 4 && _order[4] == 1) {
+            layout = Layout::NDHWC;
+        }
+        break;
+    default:
+        break;
+    }
+
+    std::stringstream stream;
+    stream << layout;
+    const std::string layoutStr = stream.str();
+
+    for (size_t i = 0; i < rank(); ++i) {
+        if (layoutStr[i] == 'N') {
+            if (!hasBatch() || batch() != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'C') {
+            if (!hasChannels() || channels() != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'H') {
+            if (!hasHeight() || height() != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'W') {
+            if (!hasWidth() || width() != i)
+                return Layout::BLOCKED;
+        } else if (layoutStr[i] == 'D') {
+            if (!hasDepth() || depth() != i)
+                return Layout::BLOCKED;
+        }
+    }
+
+    return layout;
 }
 
-const SizeVector & NetworkLayout::getOrder() const {
+const SizeVector & PartialLayout::getOrder() const {
     return _order;
 }
 
-SizeVector NetworkLayout::getNormalizingOrder() const {
+SizeVector PartialLayout::convertToOrder(const SizeVector & toOrder) const {
     SizeVector retVal;
 
     if (rank() == 0) {
@@ -105,7 +202,7 @@ SizeVector NetworkLayout::getNormalizingOrder() const {
     for (size_t i = 0; i < rank(); ++i) {
         for (size_t j = 0; j < rank(); ++j) {
             // if current layout is NHWC (0231), we can create transpose(0312)
-            if (i == _order[j]) {
+            if (toOrder[i] == _order[j]) {
                 retVal[i] = j;
             }
         }
@@ -114,61 +211,54 @@ SizeVector NetworkLayout::getNormalizingOrder() const {
     return retVal;
 }
 
-NetworkLayout::operator Layout () const {
-    if (!isInitialized()) {
-        return Layout::ANY;
-    }
-
-    BlockingDesc blockingDesc(SizeVector(rank(), 1), _order);
-    // tensor desc detects actual ie::Layout based on the _order
-    // if it cannot, then returns Layout::BLOCKED
-    TensorDesc desc(Precision::U8, SizeVector(rank(), 1), blockingDesc);
-
-    // check that autodetected dimension names match actual
-    std::stringstream stream;
-    stream << desc.getLayout();
-    std::string layoutStr = stream.str();
-
-    for (int i = 0; i < static_cast<int>(rank()); ++i) {
-        if (layoutStr[i] == 'N') {
-            if (getDimensionIndexByName(BATCH) != i)
-                return Layout::BLOCKED;
-        } else if (layoutStr[i] == 'C') {
-            if (getDimensionIndexByName(CHANNEL) != i)
-                return Layout::BLOCKED;
-        } else if (layoutStr[i] == 'H') {
-            if (getDimensionIndexByName(HEIGHT) != i)
-                return Layout::BLOCKED;
-        } else if (layoutStr[i] == 'W') {
-            if (getDimensionIndexByName(WIDTH) != i)
-                return Layout::BLOCKED;
-        } else if (layoutStr[i] == 'D') {
-            if (getDimensionIndexByName(DEPTH) != i)
-                return Layout::BLOCKED;
-        }
-    }
-
-    return desc.getLayout();
-}
-
-int NetworkLayout::getDimensionIndexByName(const std::string & name) const {
+size_t PartialLayout::getDimensionIndexByName(const std::string & name) const {
     auto it = _dimensionNames.find(name);
     if (it == _dimensionNames.end()) {
-        return -1; // maybe throw exception??
+        THROW_IE_EXCEPTION << name << " dimension index is not defined";
     }
     return it->second;
 }
 
-void NetworkLayout::setDimensionIndexByName(const std::string & dimensionName, int index) {
+void PartialLayout::setDimensionIndexByName(const std::string & dimensionName, size_t index) {
+    auto it = _dimensionNames.find(dimensionName);
+
+    // we cannot change dimension index
+    if (it != _dimensionNames.end() && it->second != index) {
+        THROW_IE_EXCEPTION << "Cannot change " << dimensionName << " dimension index";
+    }
+
     _dimensionNames[dimensionName] = index;
 }
 
-bool NetworkLayout::isScalar() const {
-    return getDimensionIndexByName(SCALAR) == 0;
+#define DEFINE_NAMED_DEMINSION(NAME, Name, name)                      \
+    bool PartialLayout::has ## Name() const {                         \
+        return _dimensionNames.find(NAME) != _dimensionNames.end();   \
+    }                                                                 \
+                                                                      \
+    size_t PartialLayout::name() const {                                 \
+        return getDimensionIndexByName(NAME);                         \
+    }                                                                 \
+                                                                      \
+    void PartialLayout::set ## Name(size_t index) {                      \
+        setDimensionIndexByName(NAME, index);                         \
+    }
+
+DEFINE_NAMED_DEMINSION(BATCH, Batch, batch)
+DEFINE_NAMED_DEMINSION(CHANNELS, Channels, channels)
+DEFINE_NAMED_DEMINSION(DEPTH, Depth, depth)
+DEFINE_NAMED_DEMINSION(HEIGHT, Height, height)
+DEFINE_NAMED_DEMINSION(WIDTH, Width, width)
+
+bool PartialLayout::isScalar() const {
+    return _dimensionNames.find(::SCALAR) != _dimensionNames.end();
 }
 
-size_t NetworkLayout::rank() const {
+size_t PartialLayout::rank() const {
     return _order.size();
+}
+
+bool PartialLayout::isInitialized() const {
+    return rank() != 0 || isScalar();
 }
 
 /////////////////////////////////////////////////////////////////////////////

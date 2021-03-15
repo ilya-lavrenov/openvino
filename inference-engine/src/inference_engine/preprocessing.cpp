@@ -13,7 +13,7 @@
 
 class LayoutNormalization : public ngraph::pass::MatcherPass {
 public:
-    using LayoutPair = std::pair<InferenceEngine::NetworkLayout, InferenceEngine::Layout>;
+    using LayoutPair = std::pair<InferenceEngine::PartialLayout, InferenceEngine::Layout>;
     using LayoutMap = std::map<std::string, LayoutPair>;
     NGRAPH_RTTI_DECLARATION;
 
@@ -31,11 +31,11 @@ public:
                 return false;
             }
 
-            InferenceEngine::NetworkLayout nLayout = it->second.first;
+            InferenceEngine::PartialLayout nLayout = it->second.first;
             InferenceEngine::Layout blobLayout = it->second.second;
 
             // layouts are consistent
-            if (!nLayout.isInitialized() || nLayout == blobLayout)
+            if (nLayout.getOrder().empty() || nLayout == blobLayout)
                 return false;
 
             // InferenceEngine::TensorDesc dummyDesc(InferenceEngine::Precision::U8, dummyDims, it->second);

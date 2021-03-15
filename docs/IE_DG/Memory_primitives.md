@@ -46,10 +46,11 @@ tdesc.offset({0, 1, 0, 2}); // = 17
 5. If you would like to create a TensorDesc with a planar format and for N dimensions (N can be different 1, 2, 4 and etc), you can use the method
 <code>InferenceEngine::TensorDesc::getLayoutByDims</code>.
 <pre class="brush:cpp">
+InferenceEngine::TensorDesc::getLayoutByDims({}); // InferenceEngine::Layout::SCALAR
 InferenceEngine::TensorDesc::getLayoutByDims({1}); // InferenceEngine::Layout::C
 InferenceEngine::TensorDesc::getLayoutByDims({1, 2}); // InferenceEngine::Layout::NC
 InferenceEngine::TensorDesc::getLayoutByDims({1, 2, 3, 4}); // InferenceEngine::Layout::NCHW
-InferenceEngine::TensorDesc::getLayoutByDims({1, 2, 3}); // InferenceEngine::Layout::BLOCKED
+InferenceEngine::TensorDesc::getLayoutByDims({1, 2, 3}); // InferenceEngine::Layout::CHW
 InferenceEngine::TensorDesc::getLayoutByDims({1, 2, 3, 4, 5}); // InferenceEngine::Layout::NCDHW
 InferenceEngine::TensorDesc::getLayoutByDims({1, 2, 3, 4, 5, ...}); // InferenceEngine::Layout::BLOCKED
 </pre>
