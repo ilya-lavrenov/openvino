@@ -28,6 +28,7 @@
 
 #if defined(__GNUC__) && (__GNUC__ <= 5)
 #include <cmath>
+using std::rint;
 #endif
 
 namespace InferenceEngine {
@@ -42,7 +43,7 @@ struct scalar_tag {};
 
 template<typename DST, typename SRC> static inline DST saturate_cast(SRC x);
 template<> inline short saturate_cast(int x) { return (std::min)(SHRT_MAX, (std::max)(SHRT_MIN, x)); }
-template<> inline short saturate_cast(float x) { return saturate_cast<short>(static_cast<int>(std::rint(x))); }
+template<> inline short saturate_cast(float x) { return saturate_cast<short>(static_cast<int>(rint(x))); }
 template<> inline float saturate_cast(float x) { return x; }
 template<> inline short saturate_cast(short x) { return x; }
 
@@ -50,7 +51,7 @@ template<> inline uint16_t saturate_cast(uint16_t x) { return x; }
 template<> inline float    saturate_cast(uint16_t x) { return x; }
 
 template<> inline uint16_t saturate_cast(int x) { return (std::min)(USHRT_MAX, (std::max)(0, x)); }
-template<> inline uint16_t saturate_cast(float x)    { return saturate_cast<uint16_t>(static_cast<int>(std::rint(x))); }
+template<> inline uint16_t saturate_cast(float x)    { return saturate_cast<uint16_t>(static_cast<int>(rint(x))); }
 template<> inline uchar saturate_cast<uchar>(int v)  { return (uchar)((unsigned)v <= UCHAR_MAX ? v : v > 0 ? UCHAR_MAX : 0); }
 
 template<> inline uint16_t saturate_cast(uint8_t x) { return x; }
@@ -62,7 +63,7 @@ template<> inline uint8_t saturate_cast(uint16_t x) {
   return (uint8_t)std::min(static_cast<uint16_t>(lim::max()),
                            std::max(static_cast<uint16_t>(lim::min()), x));
 }
-template<> inline uint8_t saturate_cast(float x)    { return saturate_cast<uint8_t>(static_cast<int>(std::rint(x))); }
+template<> inline uint8_t saturate_cast(float x)    { return saturate_cast<uint8_t>(static_cast<int>(rint(x))); }
 
 template<> inline float saturate_cast(double x)     { return x; }
 //------------------------------------------------------------------------------
@@ -104,7 +105,7 @@ template<> inline uint8_t convert_cast(float x) { return static_cast<uint8_t>(x)
 template<> inline float convert_cast(float  x) { return x; }
 template<> inline float convert_cast(double x) { return static_cast<float>(x); }
 template<> inline Q0_16 convert_cast(double x) {
-    int ix = static_cast<int>(std::rint(x * (1 << 16)));
+    int ix = static_cast<int>(rint(x * (1 << 16)));
     return saturate_cast<Q0_16>(ix);
 }
 template<> inline Q8_8 convert_cast(uchar x) { return x << 8; }

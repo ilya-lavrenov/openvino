@@ -1,0 +1,108 @@
+name: openvino # you probably want to 'snapcraft register <name>'
+version: '2022.2' # just for humans, typically '1.2+git' or '1.3.2'
+summary: OpenVINO Runtime Libraries # 79 char long summary
+website: https://docs.openvino.ai/latest/index.html
+description: |
+  OpenVINO Runtime Libraries are used to perform inference on Intel hardware
+  including CPU, GPU, GNA, MYRIAD devices
+contact: sandye64@gmail.com
+license: BSD-3-Clause
+title: OpenVINO
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+base: core20 # the base snap is the execution environment for this snap
+type: app
+
+architectures:
+  - build-on: amd64
+    run-on: amd64
+assumes:
+  - common-data-dir
+
+parts:
+  cmake-build-part:
+    plugin: cmake
+    cmake-parameters:
+    - -DCMAKE_BUILD_TYPE=Release
+    - -DCMAKE_INSTALL_PREFIX=/usr
+    - -DBUILD_TESTS=OFF
+    - -DENABLE_INTEL_GPU=OFF
+    - -DENABLE_INTEL_GNA=OFF
+    - -DENABLE_INTEL_CPU=OFF
+    - -DENABLE_INTEL_MYRIAD=OFF
+    - -DENABLE_CPPLINT=OFF
+    - -DENABLE_CLANG_FORMAT=OFF
+    - -DENABLE_NCC_STYLE=OFF
+    - -DENABLE_CLDNN=OFF
+    - -DENABLE_ONEDNN_FOR_GPU=OFF
+    - -DENABLE_PROFILING_FIRST_INFERENCE=OFF
+    - -DENABLE_TEMPLATE=OFF
+    - -DENABLE_INTEL_MYRIAD_COMMON=OFF
+    - -DENABLE_OPENCV=OFF
+    - -DENABLE_OV_ONNX_FRONTEND=OFF
+    - -DENABLE_OV_PADDLE_FRONTEND=OFF
+    - -DENABLE_OV_TF_FRONTEND=OFF
+    - -DENABLE_OV_IR_FRONTEND=OFF
+    - -DENABLE_REQUIREMENTS_INSTALL=OFF
+    - -DCPACK_GENERATOR=DEB # to disable some components like DM, install scripts, use FHS
+    - -DENABLE_SAMPLES=OFF
+    cmake-generator: "Unix Makefiles"
+    source: ${SNAPCRAFT_PROJECT_DIR}
+    source-type: local
+    # source: https://gitlab.kitware.com/cmake/cmake.git
+    # source-depth: 1
+    # source-tag: v3.23.1
+    # source-type: git
+    build-environment:
+    - LC_ALL: C.UTF-8
+    - LANG: C.UTF-8
+    build-snaps:
+    - cmake
+    build-packages:
+    - wget
+    - git
+    - zlib1g-dev
+    - pkg-config
+    - libgflags-dev
+    - libusb-1.0-0-dev
+    - libtbb-dev
+    stage-packages:
+    - libtbb2
+    - libusb-1.0-0
+    - libgflags2.2
+    filesets:
+      # core:
+      #   exclude-dir: [-/usr/lib/libopenvino.*plugin.so]
+      #   include-dir: [usr/*]
+      hetero: [usr/lib/openvino2022.2.0/libopenvino_hetero_plugin.so]
+      auto: [usr/lib/openvino2022.2.0/libopenvino_auto_plugin.so]
+      auto-batch: [usr/lib/openvino2022.2.0/libopenvino_auto_batch_plugin.so]
+    # stage:
+    #   - $include-dir
+    #   - $exclude-dir
+
+slots:
+  # to share OpenVINO Runtime libraries
+  openvino-2022-2-0:
+    interface: content
+    content: openvino-2022-2-0
+    read:
+      - $SNAP/usr/lib
+  openvino-c-2022-2-0:
+    interface: content
+    content: openvino-c-2022-2-0
+    read:
+      - $SNAP/usr/lib
+
+# CONSUMER
+# plugs:
+#   openvino-2022-2-0:
+#     interface: content
+#     content: openvino-2022-2-0
+#     target: $SNAP/extra-libs
+
+apps:
+  openvino-compile-tool:
+    command: usr/bin/compile_tool
+    # environment:
+    #   LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib

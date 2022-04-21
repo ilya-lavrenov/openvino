@@ -37,7 +37,8 @@
 #include <functional>
 
 #if defined(__GNUC__) && (__GNUC__ <= 5)
-#include <cmath>
+using std::ceil;
+using std::floor;
 #endif
 
 namespace InferenceEngine {
@@ -750,8 +751,8 @@ struct AreaDownMapper {
         double inCoord0 =  outCoord      * ratio;
         double inCoord1 = (outCoord + 1) * ratio;
 
-        double index0 = std::floor(inCoord0 + 0.001);
-        double index1 =  std::ceil(inCoord1 - 0.001);
+        double index0 = floor(inCoord0 + 0.001);
+        double index1 =  ceil(inCoord1 - 0.001);
 
         double alpha0 =   (index0 + 1 - inCoord0) * inv_ratio;
         double alpha1 = - (index1 - 1 - inCoord1) * inv_ratio;
