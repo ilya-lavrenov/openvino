@@ -9,34 +9,42 @@ grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
 parts:
+  dependencies-part:
+    plugin: nil
+    build-packages:
+    - libgflags-dev
+    - mc
+    stage-packages:
+    - libgflags2.2
+    # build-snaps:
+    # - openvino/latest/beta
+    stage-snaps:
+    - openvino/latest/beta
+
   cmake-build-part:
+    after: [dependencies-part]
     plugin: cmake
     source: ${SNAPCRAFT_PROJECT_DIR}
     source-type: local
     build-environment:
-    - LC_ALL: C.UTF-8
-    - LANG: C.UTF-8
+    - SNAPCRAFT_PARALLEL_BUILD_COUNT: "8"
     cmake-parameters:
     - -DCMAKE_BUILD_TYPE=Release
+    - -DCPACK_GENERATOR=DEB
     - -DCMAKE_INSTALL_PREFIX=/usr
-    build-packages:
-    - libgflags-dev
-    stage-packages:
-    - libgflags2.2
+    - -DCMAKE_VERBOSE_MAKEFILE=ON
+      # - -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      # - -DCMAKE_C_COMPILER_LAUNCHER=ccache
+    cmake-generator: "Unix Makefiles"
     stage-snaps:
-    - openvino/latest/beta
-    build-snaps:
-    - cmake
     - openvino/latest/beta
 
 plugs:
   openvino-2022-2-0:
     interface: content
     content: openvino-2022-2-0
-    target: $SNAP/extra-libs
+    target: $SNAP/usr/lib/x86_64-linux-gnu
 
 apps:
   hello-query-device:
-    command: usr/bin/hello_query_sample
-    # environment:
-    #   LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib
+    command: usr/bin/hello_query_device

@@ -254,7 +254,7 @@ macro(ie_add_sample)
     endif()
 
     install(TARGETS ${IE_SAMPLE_NAME}
-            RUNTIME DESTINATION bin/
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             COMPONENT samples)
 
     # create global target with all samples / demo apps
@@ -279,3 +279,5 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
     list(REMOVE_ITEM samples_dirs common thirdparty)
 endif()
 add_samples_to_build(${samples_dirs})
+
+include(CPack)

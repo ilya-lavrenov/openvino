@@ -20,11 +20,34 @@ assumes:
   - common-data-dir
 
 parts:
+  dependencies-part:
+    plugin: nil
+    build-packages:
+    - wget
+    - git
+    - zlib1g-dev
+    - pkg-config
+    - libgflags-dev
+    - libtbb-dev
+    - mc
+    stage-packages:
+    - libtbb-dev
+    - libgflags2.2
   cmake-build-part:
+    after: [dependencies-part]
     plugin: cmake
+    source: ${SNAPCRAFT_PROJECT_DIR}
+    source-type: local
+    # source: https://gitlab.kitware.com/cmake/cmake.git
+    # source-depth: 1
+    # source-tag: v3.23.1
+    # source-type: git
+    build-environment:
+    - SNAPCRAFT_PARALLEL_BUILD_COUNT: "2"
     cmake-parameters:
     - -DCMAKE_BUILD_TYPE=Release
-    - -DCMAKE_INSTALL_PREFIX=/usr
+    # - -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+    # - -DCMAKE_C_COMPILER_LAUNCHER=ccache
     - -DBUILD_TESTS=OFF
     - -DENABLE_INTEL_GPU=OFF
     - -DENABLE_INTEL_GNA=OFF
@@ -44,42 +67,17 @@ parts:
     - -DENABLE_OV_TF_FRONTEND=OFF
     - -DENABLE_OV_IR_FRONTEND=OFF
     - -DENABLE_REQUIREMENTS_INSTALL=OFF
+    - -DCMAKE_VERBOSE_MAKEFILE=ON
+    - -DCMAKE_INSTALL_PREFIX=/usr
     - -DCPACK_GENERATOR=DEB # to disable some components like DM, install scripts, use FHS
     - -DENABLE_SAMPLES=OFF
     cmake-generator: "Unix Makefiles"
-    source: ${SNAPCRAFT_PROJECT_DIR}
-    source-type: local
-    # source: https://gitlab.kitware.com/cmake/cmake.git
-    # source-depth: 1
-    # source-tag: v3.23.1
-    # source-type: git
-    build-environment:
-    - LC_ALL: C.UTF-8
-    - LANG: C.UTF-8
-    build-snaps:
-    - cmake
-    build-packages:
-    - wget
-    - git
-    - zlib1g-dev
-    - pkg-config
-    - libgflags-dev
-    - libusb-1.0-0-dev
-    - libtbb-dev
-    stage-packages:
-    - libtbb2
-    - libusb-1.0-0
-    - libgflags2.2
     filesets:
-      # core:
-      #   exclude-dir: [-/usr/lib/libopenvino.*plugin.so]
-      #   include-dir: [usr/*]
-      hetero: [usr/lib/openvino2022.2.0/libopenvino_hetero_plugin.so]
-      auto: [usr/lib/openvino2022.2.0/libopenvino_auto_plugin.so]
-      auto-batch: [usr/lib/openvino2022.2.0/libopenvino_auto_batch_plugin.so]
-    # stage:
-    #   - $include-dir
-    #   - $exclude-dir
+      exclude-dir: [-usr/share, -usr/bin/deployment_manager]
+      include-dir: [usr/*]
+    stage:
+    - $include-dir
+    - $exclude-dir
 
 slots:
   # to share OpenVINO Runtime libraries
@@ -87,12 +85,7 @@ slots:
     interface: content
     content: openvino-2022-2-0
     read:
-      - $SNAP/usr/lib
-  openvino-c-2022-2-0:
-    interface: content
-    content: openvino-c-2022-2-0
-    read:
-      - $SNAP/usr/lib
+      - $SNAP/usr/lib/x86_64-linux-gnu
 
 # CONSUMER
 # plugs:
@@ -102,7 +95,5 @@ slots:
 #     target: $SNAP/extra-libs
 
 apps:
-  openvino-compile-tool:
+  compile-tool:
     command: usr/bin/compile_tool
-    # environment:
-    #   LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib
