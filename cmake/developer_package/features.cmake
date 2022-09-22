@@ -37,19 +37,25 @@ ie_dependent_option (ENABLE_COVERAGE "enable code coverage" OFF "CMAKE_CXX_COMPI
 
 # Defines CPU capabilities
 
-ie_dependent_option (ENABLE_SSE42 "Enable SSE4.2 optimizations" ON "X86_64 OR X86" OFF)
+# TODO: try to enable EMSCRIPTEN later
+ie_dependent_option (ENABLE_SSE42 "Enable SSE4.2 optimizations" ON "NOT EMSCRIPTEN;X86_64 OR X86" OFF)
 
-ie_dependent_option (ENABLE_AVX2 "Enable AVX2 optimizations" ON "X86_64 OR X86" OFF)
+ie_dependent_option (ENABLE_AVX2 "Enable AVX2 optimizations" ON "NOT EMSCRIPTEN;X86_64 OR X86" OFF)
 
-ie_dependent_option (ENABLE_AVX512F "Enable AVX512 optimizations" ON "X86_64 OR X86" OFF)
+ie_dependent_option (ENABLE_AVX512F "Enable AVX512 optimizations" ON "NOT EMSCRIPTEN;X86_64 OR X86" OFF)
 
 # Type of build, we add this as an explicit option to default it to ON
-# FIXME: Ah this moment setting this to OFF will only build ngraph a static library
-ie_option (BUILD_SHARED_LIBS "Build as a shared library" ON)
+if(EMSCRIPTEN)
+    set (BUILD_SHARED_LIBS_DEFAULT OFF)
+else()
+    set (BUILD_SHARED_LIBS_DEFAULT ON)
+endif()
+
+ie_option (BUILD_SHARED_LIBS "Build as a shared library" ${BUILD_SHARED_LIBS_DEFAULT})
 
 # Android does not support SOVERSION
 # see https://www.opengis.ch/2011/11/23/creating-non-versioned-shared-libraries-for-android/
-ie_dependent_option (ENABLE_LIBRARY_VERSIONING "Enable libraries versioning" ON "NOT WIN32;NOT ANDROID" OFF)
+ie_dependent_option (ENABLE_LIBRARY_VERSIONING "Enable libraries versioning" ON "NOT WIN32;NOT ANDROID;BUILD_SHARED_LIBS" OFF)
 
 ie_dependent_option (ENABLE_FASTER_BUILD "Enable build features (PCH, UNITY) to speed up build time" OFF "CMAKE_VERSION VERSION_GREATER_EQUAL 3.16" OFF)
 

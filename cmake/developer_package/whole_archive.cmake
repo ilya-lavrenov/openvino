@@ -33,7 +33,7 @@ function(ieTargetLinkWholeArchive targetName)
                     "-WHOLEARCHIVE:\"$<TARGET_FILE:${staticLib}>\""
                     )
             endif()
-        elseif(APPLE)
+        elseif(APPLE OR EMSCRIPTEN)
             list(APPEND libs
                 "-Wl,-all_load"
                 ${staticLib}

@@ -69,6 +69,10 @@ if(UNIX AND NOT APPLE)
     set(LINUX ON)
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL Emscripten)
+    set(EMSCRIPTEN ON)
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(Apple)?Clang$")
     set(OV_COMPILER_IS_CLANG ON)
 else()

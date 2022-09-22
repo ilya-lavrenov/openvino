@@ -93,11 +93,11 @@ ie_option (ENABLE_AUTO_BATCH "Enables Auto-Batching Plugin" ON)
 
 ie_option (ENABLE_HETERO "Enables Hetero Device Plugin" ON)
 
-ie_option (ENABLE_TEMPLATE "Enable template plugin" ON)
+ie_dependent_option (ENABLE_TEMPLATE "Enable template plugin" ON "NOT EMSCRIPTEN" OFF)
 
 ie_dependent_option (ENABLE_INTEL_MYRIAD_COMMON "common part of myriad plugin" ON "NOT WINDOWS_PHONE;NOT WINDOWS_STORE" OFF)
 
-if(UNIVERSAL2)
+if(UNIVERSAL2 OR EMSCRIPTEN)
     set(ENABLE_INTEL_MYRIAD_DEFAULT OFF)
 else()
     set(ENABLE_INTEL_MYRIAD_DEFAULT ON)
@@ -166,12 +166,13 @@ else()
 endif()
 
 find_host_package(PythonInterp 3 QUIET)
-ie_option(ENABLE_OV_ONNX_FRONTEND "Enable ONNX FrontEnd" ${PYTHONINTERP_FOUND})
-ie_option(ENABLE_OV_PADDLE_FRONTEND "Enable PaddlePaddle FrontEnd" ON)
-ie_option(ENABLE_OV_IR_FRONTEND "Enable IR FrontEnd" ON)
-ie_option(ENABLE_OV_TF_FRONTEND "Enable TensorFlow FrontEnd" ON)
+# TODO: try to disable code in ONNX library which tries to build dynamic libraries
+ie_dependent_option(ENABLE_OV_ONNX_FRONTEND "Enable ONNX FrontEnd" ${PYTHONINTERP_FOUND} "NOT EMSCRIPTEN" OFF)
+ie_dependent_option(ENABLE_OV_PADDLE_FRONTEND "Enable PaddlePaddle FrontEnd" ON "NOT EMSCRIPTEN" OFF)
+ie_dependent_option(ENABLE_OV_TF_FRONTEND "Enable TensorFlow FrontEnd" ON "NOT EMSCRIPTEN" OFF)
 ie_dependent_option(ENABLE_SYSTEM_PROTOBUF "Use system protobuf" OFF
     "ENABLE_OV_ONNX_FRONTEND OR ENABLE_OV_PADDLE_FRONTEND OR ENABLE_OV_TF_FRONTEND;BUILD_SHARED_LIBS" OFF)
+ie_option(ENABLE_OV_IR_FRONTEND "Enable IR FrontEnd" ON)
 
 ie_dependent_option(ENABLE_OV_CORE_UNIT_TESTS "Enables OpenVINO core unit tests" ON "ENABLE_TESTS" OFF)
 ie_option(ENABLE_OPENVINO_DEBUG "Enable output for OPENVINO_DEBUG statements" OFF)

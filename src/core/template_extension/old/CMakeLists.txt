@@ -16,7 +16,7 @@ if(OpenCV_FOUND)
     set(SRC ${SRC} fft_kernel.cpp fft_op.cpp)
 endif()
 
-add_library(${TARGET_NAME} MODULE ${SRC})
+add_library(${TARGET_NAME} STATIC ${SRC})
 
 if(OpenCV_FOUND)
     target_compile_definitions(${TARGET_NAME} PRIVATE OPENCV_IMPORT_ENABLED)
