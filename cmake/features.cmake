@@ -93,7 +93,7 @@ ie_option (ENABLE_AUTO_BATCH "Enables Auto-Batching Plugin" ON)
 
 ie_option (ENABLE_HETERO "Enables Hetero Device Plugin" ON)
 
-ie_dependent_option (ENABLE_TEMPLATE "Enable template plugin" ON "NOT EMSCRIPTEN" OFF)
+ie_option (ENABLE_TEMPLATE "Enable template plugin" ON)
 
 ie_dependent_option (ENABLE_INTEL_MYRIAD_COMMON "common part of myriad plugin" ON "NOT WINDOWS_PHONE;NOT WINDOWS_STORE" OFF)
 
