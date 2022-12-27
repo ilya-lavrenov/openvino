@@ -130,7 +130,6 @@ MVN::MVN(const std::shared_ptr<ngraph::Node>& op, const dnnl::engine& eng, Weigh
         mvnAttrs.epsValue_ = mvnOp->get_eps();
         mvnAttrs.initAcrossChannels_ = mvnOp->get_across_channels();
     }
-    // mvnAttrs.execAcrossChannels_ = mvnAttrs.initAcrossChannels_;
 }
 
 void MVN::getSupportedDescriptors() {}
@@ -232,40 +231,11 @@ void MVN::prepareParams() {
         dstMemoryDescs.push_back(getChildEdgeAt(i)->getMemoryPtr()->getDescPtr());
     }
 
-    // std::vector<MemoryDescCPtr> srcMemoryDescs;
-    // for (int i = 0; i < selectedPD->getConfig().inConfs.size(); i++) {
-    //     srcMemoryDescs.push_back(selectedPD->getConfig().inConfs[i].getMemDesc());
-    // }
-    // std::vector<MemoryDescCPtr> dstMemoryDescs;
-    // for (int i = 0; i < selectedPD->getConfig().outConfs.size(); i++) {
-    //     dstMemoryDescs.push_back(selectedPD->getConfig().outConfs[i].getMemDesc());
-    // }
-
     dnnl::primitive_attr attr;
     setPostOps(attr, true);
     auto selectedPD = getSelectedPrimitiveDescriptor();
-    execPtr = selectedPD->getExecutorFactory()->makeExecutor(mvnAttrs, srcMemoryDescs, dstMemoryDescs, attr);
+    execPtr = selectedPD->getExecutorFactoryAs<MVNExecutorFactory>()->makeExecutor(mvnAttrs, srcMemoryDescs, dstMemoryDescs, attr);
     selectedPD->setImplementationType(execPtr->getImplType());
-    // mvnAttrs.src_prc = selectedPD->getConfig().inConfs[0].getMemDesc()->getPrecision();
-    // mvnAttrs.dst_prc = selectedPD->getConfig().outConfs[0].getMemDesc()->getPrecision();
-
-
-    // MVNKey key = {mvnAttrs, dnnl::primitive_attr()};
-    // setPostOps(key.attr, true);
-
-    // auto builder = [&](const MVNKey& key) -> std::shared_ptr<MVNExecutor> {
-    //     std::shared_ptr<MVNExecutor> executor;
-    //     if (mayiuse(cpu::x64::sse41)) {
-    //         executor = std::make_shared<MVNJitExecutor>(key.mvnAttrs, key.attr);
-    //     } else {
-    //         executor = std::make_shared<MVNRefExecutor>(key.mvnAttrs);
-    //     }
-    //     return executor;
-    // };
-
-    // auto cache = getRuntimeCache();
-    // auto result = cache->getOrCreate(key, builder);
-    // execPtr = result.first;
 }
 
 void MVN::setPostOps(dnnl::primitive_attr &attr, bool initWeights) {
