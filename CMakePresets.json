@@ -1,0 +1,376 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "base-preset",
+            "hidden": true,
+            "displayName": "Base preset",
+            "description": "Base preset for native and cross-compilations",
+            "binaryDir": "${sourceParentDir}/builds/${presetName}"
+        },
+        {
+            "name": "ninja",
+            "inherits": "base-preset",
+            "displayName": "Ninja",
+            "description": "Build OpenVINO using Ninja",
+            "generator": "Ninja"
+        },
+
+        {
+            "name": "base-linux",
+            "hidden": true,
+            "inherits": "base-preset",
+            "displayName": "Base Linux preset",
+            "description": "Base Linux preset for native and cross-compilations",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "default",
+            "inherits": "base-linux",
+            "displayName": "Default Linux",
+            "description": "Cmake preset for default Linux build"
+        },
+        {
+            "name": "archive-packages",
+            "inherits": "default",
+            "displayName": "TGZ packages",
+            "description": "Cmake preset to generate TGZ packages",
+            "cacheVariables": {
+                "ENABLE_SYSTEM_TBB": "ON",
+                "ENABLE_SYSTEM_PUGIXML": "ON"
+            }
+        },
+        {
+            "name": "wheel-packages",
+            "inherits": "default",
+            "displayName": "Wheel packages",
+            "description": "Cmake preset to generate python wheel packages",
+            "cacheVariables": {
+                "ENABLE_PYTHON": "ON",
+                "ENABLE_WHEEL": "ON"
+            }
+        },
+        {
+            "name": "ia32-linux",
+            "inherits": "base-linux",
+            "displayName": "X86 Linux",
+            "description": "x86 cross-compilation Linux",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/ia32.linux.toolchain.cmake",
+            "cacheVariables": {
+                "THREADING": "SEQ"
+            }
+        },
+        {
+            "name": "arm32-linux",
+            "inherits": "base-linux",
+            "displayName": "ARM Linux",
+            "description": "ARM cross-compilation Linux",
+            "toolchainFile": "${sourceDir}/cmake/arm.toolchain.cmake"
+        },
+        {
+            "name": "arm64-linux",
+            "inherits": "base-linux",
+            "displayName": "ARM64 Linux",
+            "description": "ARM64 cross-compilation Linux",
+            "toolchainFile": "${sourceDir}/cmake/arm64.toolchain.cmake"
+        },
+        {
+            "name": "riscv-64-linux",
+            "inherits": "base-linux",
+            "displayName": "RISC-V 64-bits Linux",
+            "description": "RISC-V 64-bits cross-compilation Linux",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/riscv64-gnu.toolchain.cmake"
+        },
+        {
+            "name": "clang-linux",
+            "inherits": "base-linux",
+            "displayName": "Clang Linux",
+            "description": "Build OpenVINO with clang compiler",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_COMPILER": "clang"
+            }
+        },
+        {
+            "name": "debian-packages",
+            "inherits": [ "base-linux", "archive-packages" ],
+            "displayName": "Debian packages",
+            "description": "Cmake preset to generate debian packages",
+            "cacheVariables": {
+                "CPACK_GENERATOR": "DEB"
+            }
+        },
+        {
+            "name": "rpm-packages",
+            "inherits": [ "base-linux", "archive-packages" ],
+            "displayName": "RPM packages",
+            "description": "Cmake preset to generate rpm packages",
+            "cacheVariables": {
+                "CPACK_GENERATOR": "RPM"
+            }
+        },
+
+        {
+            "name": "base-common-libraries",
+            "hidden": true,
+            "inherits": "archive-packages",
+            "displayName": "Base for conda / brew",
+            "description": "Base preset which disable all non Apach2 release components",
+            "cacheVariables": {
+                "ENABLE_CPPLINT": "OFF",
+                "ENABLE_NCC_STYLE": "OFF",
+                "ENABLE_CLANG_FORMAT": "OFF",
+                "ENABLE_INTEL_GPU": "OFF",
+                "ENABLE_INTEL_GNA": "OFF",
+                "ENABLE_INTEL_MYRIAD_COMMON": "OFF",
+                "ENABLE_TEMPLATE": "OFF",
+                "ENABLE_SAMPLES": "OFF",
+                "ENABLE_PYTHON": "OFF",
+                "ENABLE_TESTS": "OFF",
+                "ENABLE_COMPILE_TOOL": "OFF",
+                "ENABLE_SYSTEM_PROTOBUF": "ON"
+            }
+        },
+        {
+            "name": "brew-packages",
+            "inherits": "base-common-libraries",
+            "displayName": "Brew packages",
+            "description": "Cmake preset to generate brew packages",
+            "cacheVariables": {
+                "CPACK_GENERATOR": "BREW"
+            }
+        },
+        {
+            "name": "conda-packages",
+            "inherits": "base-common-libraries",
+            "displayName": "Conda-forge packages",
+            "description": "Cmake preset to generate conda-forge packages",
+            "cacheVariables": {
+                "CPACK_GENERATOR": "CONDA-FORGE"
+            }
+        },
+
+
+        {
+            "name": "base-windows",
+            "hidden": true,
+            "inherits": "base-preset",
+            "displayName": "Base Windows configure preset",
+            "description": "Base Windows preset for native and cross-compilation",
+            "toolset": {
+                "value": "142",
+                "strategy": "external"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-msvc-2019-x86-64",
+            "inherits": "base-windows",
+            "displayName": "Windows MSVC 2019 x86-64",
+            "description": "Build OpenVINO for Windows x86-64 using MSVC 2022",
+            "generator": "Visual Studio 16 2019",
+            "architecture": "x64"
+        },
+        {
+            "name": "windows-msvc-2019-arm64",
+            "inherits": "base-windows",
+            "displayName": "Windows MSVC 2019 arm64",
+            "description": "Build OpenVINO for Windows arm64 using MSVC 2022",
+            "generator": "Visual Studio 16 2019",
+            "architecture": "ARM64"
+        },
+        {
+            "name": "windows-msvc-2022-x86-64",
+            "inherits": "base-windows",
+            "displayName": "Windows MSVC 2022 x86-64",
+            "description": "Build OpenVINO for Windows x86-64 using MSVC 2022",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "toolset": {
+                "value": "143",
+                "strategy": "external"
+            }
+        },
+        {
+            "name": "windows-msvc-2022-arm64",
+            "inherits": "base-windows",
+            "displayName": "Windows MSVC 2022 arm64",
+            "description": "Build OpenVINO for Windows arm64 using MSVC 2022",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "ARM64",
+            "toolset": {
+                "value": "143",
+                "strategy": "external"
+            }
+        },
+
+
+        {
+            "name": "base-macos",
+            "hidden": true,
+            "inherits": "base-preset",
+            "displayName": "Base macOS preset",
+            "description": "Base present for macOS build",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "macos-x86-64",
+            "inherits": "base-macos",
+            "displayName": "macOS x86-64",
+            "description": "OpenVINO for macOS x86-64",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "x86_64"
+            }
+        },
+        {
+            "name": "macos-arm64",
+            "inherits": "base-macos",
+            "displayName": "macOS arm64",
+            "description": "OpenVINO for macOS arm64",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "arm64"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "release-all",
+            "configuration": "Release",
+            "configurePreset": "base-preset"
+        },
+        {
+            "name": "debug-all",
+            "configuration": "Debug",
+            "configurePreset": "base-preset"
+        },
+        {
+            "name": "wheel-packages",
+            "configuration": "Release",
+            "configurePreset": "wheel-packages",
+            "targets": [
+                "ie_wheel",
+                "openvino_dev_wheel"
+            ]
+        }
+    ],
+    "testPresets": [
+
+    ],
+    "packagePresets": [
+        {
+            "name": "debian-packages",
+            "displayName": "Debian packages",
+            "description": "Pack OpenVINO as debian packages",
+            "configurePreset": "debian-packages",
+            "generators": [ "DEB" ],
+            "configurations": [ "Release" ]
+        },
+        {
+            "name": "rpm-packages",
+            "displayName": "RPM packages",
+            "description": "Pack OpenVINO as RPM packages",
+            "configurePreset": "rpm-packages",
+            "generators": [ "RPM" ],
+            "configurations": [ "Release" ]
+        },
+        {
+            "name": "archive-packages",
+            "displayName": "TGZ packages",
+            "description": "Pack OpenVINO as TGZ archives",
+            "configurePreset": "archive-packages",
+            "generators": [ "TGZ" ],
+            "configurations": [ "Release" ]
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "debian-packages",
+            "displayName": "Debian packages",
+            "description": "Build OpenVINO and pack as debian packages",
+            "steps": [
+                { 
+                    "type": "configure",
+                    "name": "debian-packages"
+                },
+                {
+                    "type": "build",
+                    "name": "release-all"
+                },
+                {
+                    "type": "package",
+                    "name": "debian-packages"
+                }
+            ]
+        },
+        {
+            "name": "rpm-packages",
+            "displayName": "RPM packages",
+            "description": "Build OpenVINO and pack as RPM packages",
+            "steps": [
+                { 
+                    "type": "configure",
+                    "name": "rpm-packages"
+                },
+                {
+                    "type": "build",
+                    "name": "release-all"
+                },
+                {
+                    "type": "package",
+                    "name": "rpm-packages"
+                }
+            ]
+        },
+        {
+            "name": "archive-packages",
+            "displayName": "TGZ packages",
+            "description": "Build OpenVINO and pack as TGZ packages",
+            "steps": [
+                { 
+                    "type": "configure",
+                    "name": "archive-packages"
+                },
+                {
+                    "type": "build",
+                    "name": "release-all"
+                },
+                {
+                    "type": "package",
+                    "name": "archive-packages"
+                }
+            ]
+        },
+        {
+            "name": "wheel-packages",
+            "displayName": "Wheel packages",
+            "description": "Build OpenVINO and pack as wheel packages",
+            "steps": [
+                { 
+                    "type": "configure",
+                    "name": "wheel-packages"
+                },
+                {
+                    "type": "build",
+                    "name": "wheel-packages"
+                }
+            ]
+        }
+    ]
+}
