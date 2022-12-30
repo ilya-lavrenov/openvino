@@ -28,7 +28,7 @@ CMakePresets.json @openvinotoolkit/openvino-ie-maintainers
 /docs/OV_Runtime_UG/supported_plugins/GNA.md @openvinotoolkit/openvino-docs-maintainers @openvinotoolkit/openvino-ie-gna-maintainers
 /docs/OV_Runtime_UG/supported_plugins/GPU.md @openvinotoolkit/openvino-docs-maintainers @openvinotoolkit/openvino-ie-gpu-maintainers
 /docs/CMakeLists.txt @openvinotoolkit/openvino-ie-maintainers
-/docs/requirements.txt @openvinotoolkit/openvino-docs-maintainers @openvinotoolkit/openvino-configuration-mgmt
+/docs/requirements_dev.txt @openvinotoolkit/openvino-docs-maintainers @openvinotoolkit/openvino-configuration-mgmt
 *.md  @openvinotoolkit/openvino-docs-maintainers
 README @openvinotoolkit/openvino-docs-maintainers
 
