@@ -34,7 +34,7 @@ sphinx==4.5.0
 sphinx-copybutton==0.3.3
 sphinx-inline-tabs==2021.8.17b10
 sphinx-panels==0.6.0
-sphinx-sitemap==2.2.0
+sphinx-sitemap==2.4.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0
