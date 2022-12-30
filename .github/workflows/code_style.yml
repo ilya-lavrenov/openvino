@@ -13,6 +13,9 @@ concurrency:
 jobs:
   clang-format:
     runs-on: ubuntu-20.04
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -34,8 +37,7 @@ jobs:
 
       # Run cmake with -DENABLE_PROFILING_ITT=ON -DSELECTIVE_BUILD=COLLECT in order to enable codestyle check for ITT collector
       - name: CMake configure
-        run: |
-          cmake -DENABLE_PYTHON=ON -DENABLE_TESTS=ON -DENABLE_PROFILING_ITT=ON -DSELECTIVE_BUILD=COLLECT -B build
+        run: cmake -DENABLE_PYTHON=ON -DENABLE_TESTS=ON -DENABLE_PROFILING_ITT=ON -DSELECTIVE_BUILD=COLLECT -B build
 
       - name: Fix code style
         run: cmake --build build --target clang_format_fix_all -j8
@@ -46,21 +48,24 @@ jobs:
 
   ShellCheck:
     runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Install ShellCheck
-        run: |
-          sudo apt update
-          sudo apt --assume-yes install shellcheck
-
-      - name: CMake configure
-        run: cmake -DENABLE_INTEL_MYRIAD_COMMON=OFF -B build
 
       - name: ShellCheck
-        run: cmake --build build --target ie_shellcheck -j8
+        uses: reviewdog/action-shellcheck@v1
+        with:
+          level: info
+          reporter: github-pr-review
+          check_all_files_with_shebangs: true
+          exclude: |
+            ./scripts/install_dependencies/install_NEO_OCL_driver.sh
+            ./scripts/install_dependencies/install_openvino_dependencies.sh
+            ./src/bindings/python/tests/test_onnx/model_zoo_preprocess.sh
+            ./src/bindings/python/tests_compatibility/test_onnx/model_zoo_preprocess.sh
+            ./scripts/setupvars/setupvars.sh
+          shellcheck_flags: '--exclude=SC1091,SC2164,SC2162,SC1090'
 
   NamingConventionCheck:
     runs-on: ubuntu-22.04
