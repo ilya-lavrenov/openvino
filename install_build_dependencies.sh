@@ -29,7 +29,7 @@ fi
 if [ -f /etc/lsb-release ] || [ -f /etc/debian_version ] ; then
     # Ubuntu
     host_cpu=$(uname -m)
-    if [ "$host_cpu" = "x86_64" ]; then
+    if [ $host_cpu = "x86_64" ]; then
         x86_64_specific_packages=(gcc-multilib g++-multilib)
     else
         x86_64_specific_packages=()
