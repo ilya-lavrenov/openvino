@@ -6,10 +6,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "13:37"
+      time: "13:39"
       # timezone: "Poland"
       timezone: "Asia/Dubai"
-    open-pull-requests-limit: 12
+    open-pull-requests-limit: 13
     assignees:
       - "jiwaszki"
       - "p-wysocki"
@@ -19,7 +19,7 @@ updates:
       - "category: dependency_changes"
     allow:
       - dependency-name: "*"
-        dependency-type: "development"
+        dependency-type: "production"
     commit-message:
       prefix: "pip"
       include: "scope"
