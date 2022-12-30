@@ -6,10 +6,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "12:28g"
+      time: "12:50"
       # timezone: "Poland"
       timezone: "Asia/Dubai"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 15
     assignees:
       - "jiwaszki"
       - "p-wysocki"
