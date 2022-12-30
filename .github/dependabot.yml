@@ -6,10 +6,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "13:32"
+      time: "13:37"
       # timezone: "Poland"
       timezone: "Asia/Dubai"
-    open-pull-requests-limit: 11
+    open-pull-requests-limit: 12
     assignees:
       - "jiwaszki"
       - "p-wysocki"
@@ -17,10 +17,9 @@ updates:
       - openvinotoolkit/openvino-configuration-mgmt
     labels:
       - "category: dependency_changes"
-    # ignore:
-    #   # example of ignore
-    #   - dependency-name: "onnx"
-    #     update-types: ["version-update:semver-patch"]
+    allow:
+      - dependency-name: "*"
+        dependency-type: "development"
     commit-message:
       prefix: "pip"
       include: "scope"
