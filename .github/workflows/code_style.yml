@@ -56,7 +56,7 @@ jobs:
       - name: ShellCheck
         uses: reviewdog/action-shellcheck@v1
         with:
-          level: info
+          level: style
           reporter: github-pr-review
           check_all_files_with_shebangs: true
           path: |
@@ -67,10 +67,8 @@ jobs:
             ./scripts/install_dependencies
             ./src/bindings/python/tests/test_onnx
             ./src/bindings/python/tests_compatibility/test_onnx
-          exclude: |
-            ./src/bindings/python/tests_compatibility/test_onnx/model_zoo_preprocess.sh
-            ./scripts/setupvars/setupvars.sh
           shellcheck_flags: '--exclude=SC1091,SC2164,SC2162,SC1090'
+          fail_on_error: true
 
   NamingConventionCheck:
     runs-on: ubuntu-22.04
