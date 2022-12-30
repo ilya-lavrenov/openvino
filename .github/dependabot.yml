@@ -6,10 +6,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "12:50"
+      time: "13:32"
       # timezone: "Poland"
       timezone: "Asia/Dubai"
-    open-pull-requests-limit: 15
+    open-pull-requests-limit: 11
     assignees:
       - "jiwaszki"
       - "p-wysocki"
@@ -17,9 +17,6 @@ updates:
       - openvinotoolkit/openvino-configuration-mgmt
     labels:
       - "category: dependency_changes"
-    allow:
-      - dependency-name: "*"
-        dependency-type: "production"
     # ignore:
     #   # example of ignore
     #   - dependency-name: "onnx"
@@ -28,6 +25,9 @@ updates:
       prefix: "pip"
       include: "scope"
     versioning-strategy: increase-if-necessary
+    pull-request-branch-name:
+        separator: "-"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
@@ -42,4 +42,5 @@ updates:
       - "ilyachur"
     labels:
       - "category: CI"
-    versioning-strategy: increase-if-necessary
+    pull-request-branch-name:
+        separator: "-"
