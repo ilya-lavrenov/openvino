@@ -73,30 +73,33 @@ jobs:
         run: cmake --build build --target sphinx_docs --parallel ${{ steps.cpu-cores.outputs.count }}
 
       - name: Archive docs HTML
-        run: (cd build/docs && zip -r openvino_docs_html.zip _build)
+        run: (cd build/docs && tar -czvf openvino_docs_html.tar.gz _build)
 
       - name: Set PR number
         run: |
           PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
 
-      - name: 'Upload doxygen.log'
+      - name: Upload doxygen.log
         uses: actions/upload-artifact@v3
         with:
           name: doxygen_build_log_${{ env.PR_NUMBER }}.log
           path: build/docs/doxygen.log
+          retention-days: 5
 
-      - name: 'Upload sphinx.log'
+      - name: Upload sphinx.log
         uses: actions/upload-artifact@v3
         with:
           name: sphinx_build_log_${{ env.PR_NUMBER }}.log
           path: build/docs/sphinx.log
+          retention-days: 5
 
-      - name: 'Upload docs html'
+      - name: Upload docs html
         uses: actions/upload-artifact@v3
         with:
-          name: openvino_docs_html_${{ env.PR_NUMBER }}.zip
-          path: build/docs/openvino_docs_html.zip
+          name: openvino_docs_html_${{ env.PR_NUMBER }}.tar.gz
+          path: build/docs/openvino_docs_html.tar.gz
+          retention-days: 5
 
       - name: Run Pytest
         run: |
@@ -117,3 +120,24 @@ jobs:
         with:
           name: openvino_docs_pytest
           path: build/docs/_artifacts/
+
+  Deploy:
+    needs: Build_Doc
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set PR number
+        run: |
+          PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+        with:
+          artifact_name: openvino_docs_html_${{ env.PR_NUMBER }}.tar.gz
