@@ -72,6 +72,11 @@ jobs:
       - name: Build docs
         run: cmake --build build --target sphinx_docs --parallel ${{ steps.cpu-cores.outputs.count }}
 
+      - name: Upload documentation as github pages artifacts
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: build/docs/_build
+
       - name: Archive docs HTML
         run: (cd build/docs && tar -czvf openvino_docs_html.tar.gz _build)
 
@@ -114,7 +119,7 @@ jobs:
                  --doxygen-xfail="./docs/doxygen-xfail.txt" \
                  --self-contained-html ./docs/scripts/tests/test_docs.py
 
-      - name: 'Upload test results'
+      - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
         with:
@@ -131,13 +136,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Set PR number
-        run: |
-          PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
-        with:
-          artifact_name: openvino_docs_html_${{ env.PR_NUMBER }}.tar.gz
