@@ -2,68 +2,26 @@
 
 version: 2
 updates:
+  # Python API requirements
   - package-ecosystem: pip
     directory: "/"
     schedule:
       interval: "daily"
       time: "09:00"
       timezone: "Poland"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 300
     assignees:
       - "jiwaszki"
       - "p-wysocki"
-    reviewers:
-      - openvinotoolkit/openvino-configuration-mgmt
     labels:
       - "category: dependency_changes"
-    allow:
-      - dependency-name: "*"
-        dependency-type: "production"
-    commit-message:
-      prefix: "pip"
-      include: "scope"
     versioning-strategy: increase-if-necessary
-    pull-request-branch-name:
-        separator: "-"
 
-  - package-ecosystem: pip
-    directory: "/tools/mo"
-    schedule:
-      interval: "daily"
-      time: "16:52"
-      timezone: "Asia/Dubai"
-    open-pull-requests-limit: 3
-    assignees:
-      - "jiwaszki"
-      - "p-wysocki"
-    reviewers:
-      - openvinotoolkit/openvino-configuration-mgmt
-    labels:
-      - "category: dependency_changes"
-      - "category: PYTHON API"
-    allow:
-      - dependency-name: "*"
-        dependency-type: "production"
-    commit-message:
-      prefix: "pip"
-      include: "scope"
-    versioning-strategy: increase-if-necessary
-    pull-request-branch-name:
-        separator: "-"
-
+  # Github actions
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: "daily"
       time: "09:00"
       timezone: "Asia/Dubai"
-    open-pull-requests-limit: 5
-    reviewers:
-      - openvinotoolkit/openvino-ci-maintainers
-    assignees:
-      - "ilya-lavrenov"
-      - "ilyachur"
-    labels:
-      - "category: CI"
-    pull-request-branch-name:
-        separator: "-"
+    open-pull-requests-limit: 3
