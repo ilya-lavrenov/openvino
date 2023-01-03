@@ -23,7 +23,6 @@
 #    endif
 #endif
 
-
 /// @brief message for help argument
 static const char help_message[] = "Print a usage message";
 
