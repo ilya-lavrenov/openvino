@@ -43,6 +43,7 @@
 #include <ngraph/runtime/reference/gelu.hpp>
 #include <ngraph/runtime/reference/generate_proposal.hpp>
 #include <ngraph/runtime/reference/greater.hpp>
+#include <ngraph/runtime/reference/grid_sample.hpp>
 #include <ngraph/runtime/reference/grn.hpp>
 #include <ngraph/runtime/reference/group_convolution.hpp>
 #include <ngraph/runtime/reference/group_convolution_backprop_data.hpp>
@@ -51,6 +52,9 @@
 #include <ngraph/runtime/reference/if.hpp>
 #include <ngraph/runtime/reference/interpolate.hpp>
 #include <ngraph/runtime/reference/irdft.hpp>
+#include <ngraph/runtime/reference/is_finite.hpp>
+#include <ngraph/runtime/reference/is_inf.hpp>
+#include <ngraph/runtime/reference/is_nan.hpp>
 #include <ngraph/runtime/reference/log.hpp>
 #include <ngraph/runtime/reference/log_softmax.hpp>
 #include <ngraph/runtime/reference/lrn.hpp>
@@ -83,13 +87,14 @@
 #include <ngraph/runtime/reference/squared_difference.hpp>
 #include <ngraph/runtime/reference/tanh.hpp>
 #include <ngraph/runtime/reference/tensor_iterator.hpp>
+#include <ngraph/runtime/reference/unique.hpp>
 #include <ngraph/runtime/reference/utils/nms_common.hpp>
 
 #include "backend.hpp"
 #include "ngraph/ops.hpp"
 #include "ngraph/runtime/reference/convert_color_nv12.hpp"
-#include "ngraph_ops/augru_cell.hpp"
-#include "ngraph_ops/augru_sequence.hpp"
+#include "ov_ops/augru_cell.hpp"
+#include "ov_ops/augru_sequence.hpp"
 
 using namespace ngraph;
 using namespace std;
@@ -586,7 +591,7 @@ bool call(const HostTensorVector& func_outputs,
         op->validate_and_infer_types();
         OPENVINO_SUPPRESS_DEPRECATED_START
         if (!op->evaluate(op_outputs, op_inputs)) {
-            auto evaluates_map = ngraph::runtime::interpreter::get_evaluators_map();
+            const auto& evaluates_map = ngraph::runtime::interpreter::get_evaluators_map();
             auto it = evaluates_map.find(op->get_type_info());
             if (!it->second(op, op_outputs, op_inputs)) {
                 return false;
@@ -676,15 +681,15 @@ template <element::Type_t ET>
 bool evaluate(const shared_ptr<op::v8::If>& op, const HostTensorVector& outputs, const HostTensorVector& inputs) {
     std::vector<std::shared_ptr<Function>> bodies;
     for (size_t i = 0; i < op->get_internal_subgraphs_size(); i++) {
-        bodies.emplace_back(op->get_function(i));
+        bodies.emplace_back(op->get_function(static_cast<int>(i)));
     }
     std::vector<ov::op::util::MultiSubGraphOp::MultiSubgraphInputDescriptionVector> in_descs;
     for (size_t i = 0; i < op->get_input_descriptions_size(); i++) {
-        in_descs.emplace_back(op->get_input_descriptions(i));
+        in_descs.emplace_back(op->get_input_descriptions(static_cast<int>(i)));
     }
     std::vector<ov::op::util::MultiSubGraphOp::MultiSubgraphOutputDescriptionVector> out_descs;
     for (size_t i = 0; i < op->get_output_descriptions_size(); i++) {
-        out_descs.emplace_back(op->get_output_descriptions(i));
+        out_descs.emplace_back(op->get_output_descriptions(static_cast<int>(i)));
     }
     try {
         runtime::reference::if_reference(bodies, out_descs, in_descs, outputs, inputs);
@@ -1019,10 +1024,10 @@ void normalize_center(float* boxes, const Shape& boxes_shape) {
         float width = current_box[2];
         float height = current_box[3];
 
-        float y1 = y_center - height / 2.0;
-        float x1 = x_center - width / 2.0;
-        float y2 = y_center + height / 2.0;
-        float x2 = x_center + width / 2.0;
+        float y1 = y_center - height / 2.0f;
+        float x1 = x_center - width / 2.0f;
+        float y2 = y_center + height / 2.0f;
+        float x2 = x_center + width / 2.0f;
 
         current_box[0] = y1;
         current_box[1] = x1;
@@ -1361,10 +1366,10 @@ void normalize_center(float* boxes, const Shape& boxes_shape) {
         float width = current_box[2];
         float height = current_box[3];
 
-        float y1 = y_center - height / 2.0;
-        float x1 = x_center - width / 2.0;
-        float y2 = y_center + height / 2.0;
-        float x2 = x_center + width / 2.0;
+        float y1 = y_center - height / 2.0f;
+        float x1 = x_center - width / 2.0f;
+        float y2 = y_center + height / 2.0f;
+        float x2 = x_center + width / 2.0f;
 
         current_box[0] = y1;
         current_box[1] = x1;
@@ -1532,10 +1537,10 @@ void normalize_center(float* boxes, const Shape& boxes_shape) {
         float width = current_box[2];
         float height = current_box[3];
 
-        float y1 = y_center - height / 2.0;
-        float x1 = x_center - width / 2.0;
-        float y2 = y_center + height / 2.0;
-        float x2 = x_center + width / 2.0;
+        float y1 = y_center - height / 2.0f;
+        float x1 = x_center - width / 2.0f;
+        float y2 = y_center + height / 2.0f;
+        float x2 = x_center + width / 2.0f;
 
         current_box[0] = y1;
         current_box[1] = x1;
@@ -1703,10 +1708,10 @@ void normalize_center(float* boxes, const Shape& boxes_shape) {
         float width = current_box[2];
         float height = current_box[3];
 
-        float y1 = y_center - height / 2.0;
-        float x1 = x_center - width / 2.0;
-        float y2 = y_center + height / 2.0;
-        float x2 = x_center + width / 2.0;
+        float y1 = y_center - height / 2.0f;
+        float x1 = x_center - width / 2.0f;
+        float y2 = y_center + height / 2.0f;
+        float x2 = x_center + width / 2.0f;
 
         current_box[0] = y1;
         current_box[1] = x1;
@@ -1904,7 +1909,7 @@ bool evaluate(const shared_ptr<op::v8::MatrixNms>& op,
     void* pscores = nullptr;
     void* pselected_num = nullptr;
     void* prois;
-    size_t num_selected = static_cast<size_t>(std::accumulate(valid_outputs.begin(), valid_outputs.end(), 0));
+    size_t num_selected = static_cast<size_t>(std::accumulate(valid_outputs.begin(), valid_outputs.end(), size_t(0)));
 
     outputs[0]->set_shape({num_selected, 6});
     prois = outputs[0]->get_data_ptr();
@@ -1954,7 +1959,7 @@ bool evaluate(const shared_ptr<op::v8::MulticlassNms>& op,
     void* pscores = nullptr;
     void* pselected_num = nullptr;
     void* prois;
-    size_t num_selected = static_cast<size_t>(std::accumulate(valid_outputs.begin(), valid_outputs.end(), 0));
+    size_t num_selected = static_cast<size_t>(std::accumulate(valid_outputs.begin(), valid_outputs.end(), int64_t(0)));
 
     outputs[0]->set_shape({num_selected, 6});
     prois = outputs[0]->get_data_ptr();
@@ -2831,7 +2836,7 @@ bool evaluate(const shared_ptr<op::v0::BatchNormInference>& op,
               const HostTensorVector& outputs,
               const HostTensorVector& inputs) {
     using T = typename element_type_traits<ET>::value_type;
-    runtime::reference::batch_norm_inference<T>(op->get_eps_value(),
+    runtime::reference::batch_norm_inference<T>(static_cast<float>(op->get_eps_value()),
                                                 inputs[2]->get_data_ptr<T>(),
                                                 inputs[0]->get_data_ptr<T>(),
                                                 inputs[1]->get_data_ptr<T>(),
@@ -2847,7 +2852,7 @@ bool evaluate(const shared_ptr<op::v5::BatchNormInference>& op,
               const HostTensorVector& outputs,
               const HostTensorVector& inputs) {
     using T = typename element_type_traits<ET>::value_type;
-    runtime::reference::batch_norm_inference<T>(op->get_eps_value(),
+    runtime::reference::batch_norm_inference<T>(static_cast<float>(static_cast<float>(op->get_eps_value())),
                                                 inputs[0]->get_data_ptr<const T>(),
                                                 inputs[1]->get_data_ptr<const T>(),
                                                 inputs[2]->get_data_ptr<const T>(),
@@ -3004,6 +3009,9 @@ bool evaluate(const shared_ptr<op::v1::ConvertLike>& op,
         break;
     case element::Type_t::f32:
         convert_like_v1::evaluate<element::Type_t::f32, OUT_ET>(op, outputs, inputs);
+        break;
+    case element::Type_t::f64:
+        convert_like_v1::evaluate<element::Type_t::f64, OUT_ET>(op, outputs, inputs);
         break;
     default:
         return false;
@@ -3517,9 +3525,9 @@ bool evaluate(const shared_ptr<op::v0::RegionYolo>& op,
     runtime::reference::region_yolo<T>(inputs[0]->get_data_ptr<const T>(),
                                        outputs[0]->get_data_ptr<T>(),
                                        inputs[0]->get_shape(),
-                                       op->get_num_coords(),
-                                       op->get_num_classes(),
-                                       op->get_num_regions(),
+                                       static_cast<int>(op->get_num_coords()),
+                                       static_cast<int>(op->get_num_classes()),
+                                       static_cast<int>(op->get_num_regions()),
                                        op->get_do_softmax(),
                                        op->get_mask());
     return true;
@@ -3593,7 +3601,7 @@ inline void evaluate(const shared_ptr<op::v6::CTCGreedyDecoderSeqLen>& op,
     using TF = typename element_type_traits<T1>::value_type;
     using TI = typename element_type_traits<T2>::value_type;
     using TIND1 = typename element_type_traits<TOUT>::value_type;
-    TI blank_index_val = inputs[0]->get_shape().back() - 1;
+    TI blank_index_val = static_cast<TI>(inputs[0]->get_shape().back() - 1);
     const TI* blank_index = &blank_index_val;
     if (inputs.size() == 3) {
         blank_index = inputs[2]->get_data_ptr<const TI>();
@@ -3849,7 +3857,7 @@ bool evaluate(const shared_ptr<op::v5::GatherND>& op, const HostTensorVector& ou
                                                   inputs[0]->get_shape(),
                                                   inputs[1]->get_shape(),
                                                   outputs[0]->get_shape(),
-                                                  op->get_batch_dims());
+                                                  static_cast<int>(op->get_batch_dims()));
     } else if (op->get_input_element_type(1) == element::i32) {
         runtime::reference::gather_nd<T, int32_t>(inputs[0]->get_data_ptr<T>(),
                                                   inputs[1]->get_data_ptr<int32_t>(),
@@ -3857,7 +3865,7 @@ bool evaluate(const shared_ptr<op::v5::GatherND>& op, const HostTensorVector& ou
                                                   inputs[0]->get_shape(),
                                                   inputs[1]->get_shape(),
                                                   outputs[0]->get_shape(),
-                                                  op->get_batch_dims());
+                                                  static_cast<int>(op->get_batch_dims()));
     } else {
         throw ngraph_error("Unexpected indices type for GatherND operation");
     }
@@ -3874,7 +3882,7 @@ bool evaluate(const shared_ptr<op::v8::GatherND>& op, const HostTensorVector& ou
                                                   inputs[0]->get_shape(),
                                                   inputs[1]->get_shape(),
                                                   outputs[0]->get_shape(),
-                                                  op->get_batch_dims());
+                                                  static_cast<int>(op->get_batch_dims()));
     } else if (op->get_input_element_type(1) == element::i32) {
         runtime::reference::gather_nd<T, int32_t>(inputs[0]->get_data_ptr<T>(),
                                                   inputs[1]->get_data_ptr<int32_t>(),
@@ -3882,7 +3890,7 @@ bool evaluate(const shared_ptr<op::v8::GatherND>& op, const HostTensorVector& ou
                                                   inputs[0]->get_shape(),
                                                   inputs[1]->get_shape(),
                                                   outputs[0]->get_shape(),
-                                                  op->get_batch_dims());
+                                                  static_cast<int>(op->get_batch_dims()));
     } else {
         throw ngraph_error("Unexpected indices type for GatherND operation");
     }
@@ -4189,6 +4197,186 @@ bool evaluate(const shared_ptr<op::v9::SoftSign>& op, const HostTensorVector& ou
         runtime::reference::softsign<bfloat16>(inputs[0]->get_data_ptr<bfloat16>(),
                                                outputs[0]->get_data_ptr<bfloat16>(),
                                                shape_size(inputs[0]->get_shape()));
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+template <typename Data_t, typename Index_t, typename Count_t>
+void execute_unique(const HostTensorVector& outputs,
+                    const HostTensorVector& inputs,
+                    const shared_ptr<op::v10::Unique>& op) {
+    const auto maybe_extract_axis = [&op]() {
+        std::unique_ptr<int64_t> axis;
+        if (op->get_input_size() == 2 && ov::op::util::is_constant(op->input_value(1).get_node())) {
+            const auto axis_constant =
+                std::dynamic_pointer_cast<op::v0::Constant>(op->input_value(1).get_node_shared_ptr());
+            const auto axis_vec = axis_constant->cast_vector<int64_t>();
+            axis = std::unique_ptr<int64_t>(new int64_t{axis_vec.at(0)});
+        }
+        return axis;
+    };
+
+    const auto unique_elements =
+        runtime::reference::find_unique_elements<Data_t, Index_t, Count_t>(inputs[0]->get_data_ptr<Data_t>(),
+                                                                           inputs[0]->get_shape(),
+                                                                           maybe_extract_axis(),
+                                                                           op->get_sorted());
+    const auto tensor_shapes =
+        runtime::reference::make_tensor_shapes(unique_elements, inputs[0]->get_shape(), maybe_extract_axis());
+
+    auto& out_unique_elements = outputs[0];
+    auto& out_indices = outputs[1];
+    auto& out_rev_indices = outputs[2];
+    auto& out_counts = outputs[3];
+
+    out_unique_elements->set_shape(std::get<0>(tensor_shapes));
+    out_indices->set_shape(std::get<1>(tensor_shapes));
+    out_rev_indices->set_shape(std::get<2>(tensor_shapes));
+    out_counts->set_shape(std::get<1>(tensor_shapes));
+
+    runtime::reference::unique(out_unique_elements->get_data_ptr<Data_t>(),
+                               out_indices->get_data_ptr<Index_t>(),
+                               out_rev_indices->get_data_ptr<Index_t>(),
+                               out_counts->get_data_ptr<Count_t>(),
+                               inputs[0]->get_data_ptr<Data_t>(),
+                               inputs[0]->get_shape(),
+                               std::get<0>(tensor_shapes),
+                               unique_elements);
+}
+
+template <element::Type_t Data_ET>
+bool evaluate(const shared_ptr<op::v10::Unique>& op, const HostTensorVector& outputs, const HostTensorVector& inputs) {
+    using Data_t = typename element_type_traits<Data_ET>::value_type;
+    if (op->get_index_element_type() == element::i32 && op->get_count_element_type() == element::i32) {
+        execute_unique<Data_t, int32_t, int32_t>(outputs, inputs, op);
+    } else if (op->get_index_element_type() == element::i64 && op->get_count_element_type() == element::i64) {
+        execute_unique<Data_t, int64_t, int64_t>(outputs, inputs, op);
+    } else if (op->get_index_element_type() == element::i32 && op->get_count_element_type() == element::i64) {
+        execute_unique<Data_t, int32_t, int64_t>(outputs, inputs, op);
+    } else if (op->get_index_element_type() == element::i64 && op->get_count_element_type() == element::i32) {
+        execute_unique<Data_t, int64_t, int32_t>(outputs, inputs, op);
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+template <element::Type_t ET>
+bool evaluate(const shared_ptr<op::v10::IsFinite>& op,
+              const HostTensorVector& outputs,
+              const HostTensorVector& inputs) {
+    element::Type input_et = op->get_input_element_type(0);
+    switch (input_et) {
+    case element::Type_t::f64:
+        ngraph::runtime::reference::is_finite<double>(inputs[0]->get_data_ptr<double>(),
+                                                      outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                                      shape_size(inputs[0]->get_shape()));
+        break;
+    case element::Type_t::f32:
+        ngraph::runtime::reference::is_finite<float>(inputs[0]->get_data_ptr<float>(),
+                                                     outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                                     shape_size(inputs[0]->get_shape()));
+        break;
+    case element::Type_t::f16:
+        ngraph::runtime::reference::is_finite<float16>(inputs[0]->get_data_ptr<float16>(),
+                                                       outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                                       shape_size(inputs[0]->get_shape()));
+        break;
+    case element::Type_t::bf16:
+        ngraph::runtime::reference::is_finite<bfloat16>(inputs[0]->get_data_ptr<bfloat16>(),
+                                                        outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                                        shape_size(inputs[0]->get_shape()));
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+template <element::Type_t ET>
+bool evaluate(const shared_ptr<op::v10::IsInf>& op, const HostTensorVector& outputs, const HostTensorVector& inputs) {
+    element::Type input_et = op->get_input_element_type(0);
+    switch (input_et) {
+    case element::Type_t::f64:
+        ngraph::runtime::reference::is_inf(inputs[0]->get_data_ptr<double>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()),
+                                           op->get_attributes());
+        break;
+    case element::Type_t::f32:
+        ngraph::runtime::reference::is_inf(inputs[0]->get_data_ptr<float>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()),
+                                           op->get_attributes());
+        break;
+    case element::Type_t::f16:
+        ngraph::runtime::reference::is_inf(inputs[0]->get_data_ptr<float16>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()),
+                                           op->get_attributes());
+        break;
+    case element::Type_t::bf16:
+        ngraph::runtime::reference::is_inf(inputs[0]->get_data_ptr<bfloat16>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()),
+                                           op->get_attributes());
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+template <element::Type_t ET>
+bool evaluate(const shared_ptr<op::v10::IsNaN>& op, const HostTensorVector& outputs, const HostTensorVector& inputs) {
+    element::Type input_et = op->get_input_element_type(0);
+    switch (input_et) {
+    case element::Type_t::f64:
+        ngraph::runtime::reference::is_nan(inputs[0]->get_data_ptr<double>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()));
+        break;
+    case element::Type_t::f32:
+        ngraph::runtime::reference::is_nan(inputs[0]->get_data_ptr<float>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()));
+        break;
+    case element::Type_t::f16:
+        ngraph::runtime::reference::is_nan(inputs[0]->get_data_ptr<float16>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()));
+        break;
+    case element::Type_t::bf16:
+        ngraph::runtime::reference::is_nan(inputs[0]->get_data_ptr<bfloat16>(),
+                                           outputs[0]->get_data_ptr<element::Type_t::boolean>(),
+                                           shape_size(inputs[0]->get_shape()));
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+template <element::Type_t DATA_ET>
+bool evaluate(const shared_ptr<op::v9::GridSample>& op,
+              const HostTensorVector& outputs,
+              const HostTensorVector& inputs) {
+    const auto& attributes = op->get_attributes();
+    element::Type grid_et = op->get_input_element_type(1);
+    switch (grid_et) {
+    case element::Type_t::f32:
+        ngraph::runtime::reference::grid_sample(outputs[0]->get_data_ptr<DATA_ET>(),
+                                                inputs[0]->get_data_ptr<DATA_ET>(),
+                                                inputs[1]->get_data_ptr<element::Type_t::f32>(),
+                                                inputs[0]->get_shape(),
+                                                inputs[1]->get_shape(),
+                                                attributes.align_corners,
+                                                attributes.mode,
+                                                attributes.padding_mode);
         break;
     default:
         return false;

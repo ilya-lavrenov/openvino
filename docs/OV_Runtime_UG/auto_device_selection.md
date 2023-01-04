@@ -54,7 +54,7 @@ For example, if you use a CPU and a GPU, the first-inference latency of AUTO wil
 
 Note that if you choose to exclude CPU from the priority list, it will be unable to support the initial model compilation stage.
      
-![autoplugin_accelerate]
+![](../img/autoplugin_accelerate.svg)
 
 This mechanism can be easily observed in the [Using AUTO with Benchmark app sample](#using-auto-with-openvino-samples-and-benchmark-app) section, showing how the first-inference latency (the time it takes to compile the model and perform the first inference) is reduced when using AUTO. For example: 
 
@@ -220,7 +220,7 @@ While `LATENCY` and `THROUGHPUT` can select one target device with your preferre
 CUMULATIVE_THROUGHPUT has similar behavior as [the Multi-Device execution mode (MULTI)](./multi_device.md). The only difference is that CUMULATIVE_THROUGHPUT uses the devices specified by AUTO, which means that it's not mandatory to add devices manually, while with MULTI, you need to specify the devices before inference. 
 
 With the CUMULATIVE_THROUGHPUT option:
-- If `AUTO` without any device names is specified, and the system has more than one GPU devices, AUTO will remove CPU from the device candidate list to keep GPU running at full capacity.
+- If `AUTO` without any device names is specified, and the system has more than two GPU devices, AUTO will remove CPU from the device candidate list to keep GPU running at full capacity.
 - If device priority is specified, AUTO will run inference requests on devices based on the priority. In the following example, AUTO will always try to use GPU first, and then use CPU if GPU is busy:
    ```sh
    ov::CompiledModel compiled_model = core.compile_model(model, "AUTO:GPU,CPU", ov::hint::performance_mode(ov::hint::PerformanceMode::CUMULATIVE_THROUGHPUT));
@@ -318,11 +318,9 @@ For more information, refer to the [C++](../../samples/cpp/benchmark_app/README.
    No demos are yet fully optimized for AUTO, by means of selecting the most suitable device, using the GPU streams/throttling, and so on.
 @endsphinxdirective
 
-## See Also
+## Additional Resources
 
 - [Debugging AUTO](AutoPlugin_Debugging.md)
 - [Running on Multiple Devices Simultaneously](./multi_device.md)
 - [Supported Devices](supported_plugins/Supported_Devices.md)
 
-
-[autoplugin_accelerate]: ../img/autoplugin_accelerate.png

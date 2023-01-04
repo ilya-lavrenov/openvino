@@ -16,10 +16,6 @@ class TestSqueeze(CommonTFLayerTest):
 
         """
 
-        #
-        #   Create Tensorflow model
-        #
-
         import tensorflow as tf
 
         tf.compat.v1.reset_default_graph()
@@ -79,7 +75,7 @@ class TestSqueeze(CommonTFLayerTest):
     test_data_3D = [
         dict(shape=[1, 1, 3], axis=[]),
         dict(shape=[1, 1, 3], axis=[0]),
-        dict(shape=[1, 1, 3], axis=[-1])
+        dict(shape=[1, 3, 1], axis=[-1])
     ]
 
     # TODO mark as precommit (after successfully passing in nightly)
