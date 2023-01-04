@@ -69,12 +69,12 @@ elseif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "^riscv64$")
   set(HOST_RISCV64 ON)
 endif()
 
-if(UNIX AND NOT (APPLE OR ANDROID))
-    set(LINUX ON)
-endif()
-
 if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     set(EMSCRIPTEN ON)
+endif()
+
+if(UNIX AND NOT (APPLE OR ANDROID OR EMSCRIPTEN))
+    set(LINUX ON)
 endif()
 
 if(ENV{OECORE_NATIVE_SYSROOT} AND AARCH64)
@@ -99,7 +99,8 @@ endif()
 get_property(OV_GENERATOR_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 function(ov_glibc_version)
-    if(LINUX)
+    # cmake needs to look at glibc version only when we build for Linux on Linux
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" AND LINUX)
         function(ov_get_definition definition var)
             execute_process(COMMAND echo "#include <errno.h>"
                             COMMAND "${CMAKE_CXX_COMPILER}" -xc - -E -dM

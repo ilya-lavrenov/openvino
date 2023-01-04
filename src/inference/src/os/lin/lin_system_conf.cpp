@@ -207,7 +207,8 @@ int getNumberOfCPUCores(bool bigCoresOnly) {
     CPU_ZERO(&usedCoreSet);
     CPU_ZERO(&currentCoreSet);
 
-    sched_getaffinity(0, sizeof(currentCpuSet), &currentCpuSet);
+    // TODO:
+    // sched_getaffinity(0, sizeof(currentCpuSet), &currentCpuSet);
 
     for (unsigned processorId = 0u; processorId < numberOfProcessors; processorId++) {
         if (CPU_ISSET(processorId, &currentCpuSet)) {
@@ -218,7 +219,8 @@ int getNumberOfCPUCores(bool bigCoresOnly) {
             }
         }
     }
-    int phys_cores = CPU_COUNT(&currentCoreSet);
+    // TODO:
+    int phys_cores = 0;//CPU_COUNT(&currentCoreSet);
 #if (IE_THREAD == IE_THREAD_TBB || IE_THREAD == IE_THREAD_TBB_AUTO)
     auto core_types = custom::info::core_types();
     if (bigCoresOnly && core_types.size() > 1) /*Hybrid CPU*/ {
