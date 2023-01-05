@@ -6,7 +6,7 @@ beautifulsoup4==4.9.3
 certifi==2022.12.7
 colorama==0.4.4
 Cython==0.29.23
-docutils==0.16
+docutils==0.19
 idna==2.10
 imagesize==1.4.1
 importlib-metadata==4.4.0
