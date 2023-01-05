@@ -133,7 +133,8 @@ typedef struct desc {
  * @struct dimensions
  * @brief Represents dimensions for input or output data
  */
-typedef struct dimensions {
+typedef struct dimensions
+{
     size_t ranks;    //!< A runk representing a number of dimensions
     size_t dims[8];  //!< An array of dimensions
 } dimensions_t;
@@ -143,7 +144,7 @@ typedef struct dimensions {
  * @brief Layouts that the inference engine supports
  */
 typedef enum {
-    ANY = 0,  //!< "ANY" layout
+    ANY   = 0,  //!< "ANY" layout
 
     // I/O data layouts
     NCHW = 1,   //!< "NCHW" layout
