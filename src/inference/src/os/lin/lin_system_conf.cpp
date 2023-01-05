@@ -220,7 +220,7 @@ int getNumberOfCPUCores(bool bigCoresOnly) {
         }
     }
     // TODO:
-    int phys_cores = 0;//CPU_COUNT(&currentCoreSet);
+    int phys_cores = 0;  // CPU_COUNT(&currentCoreSet);
 #if (IE_THREAD == IE_THREAD_TBB || IE_THREAD == IE_THREAD_TBB_AUTO)
     auto core_types = custom::info::core_types();
     if (bigCoresOnly && core_types.size() > 1) /*Hybrid CPU*/ {

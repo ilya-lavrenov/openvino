@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#include <emscripten.h>
 #include <opencv_c_wrapper.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -10,16 +11,14 @@
 
 #include "openvino/c/openvino.h"
 
-#include <emscripten.h>
-
 EMSCRIPTEN_KEEPALIVE
 void sayHi() {
-  printf("Hi!\n");
+    printf("Hi!\n");
 }
 
 EMSCRIPTEN_KEEPALIVE
 int daysInWeek() {
-  return 7;
+    return 7;
 }
 
 /**

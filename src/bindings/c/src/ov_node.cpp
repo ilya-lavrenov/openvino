@@ -17,7 +17,6 @@ ov_status_e ov_const_port_get_shape(const ov_output_const_port_t* port, ov_shape
     }
     CATCH_OV_EXCEPTIONS
 
-
     return ov_status_e::OK;
 }
 
