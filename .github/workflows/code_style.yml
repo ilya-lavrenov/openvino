@@ -39,9 +39,7 @@ jobs:
         run: cmake -DENABLE_PYTHON=ON -DENABLE_TESTS=ON -DENABLE_PROFILING_ITT=ON -DSELECTIVE_BUILD=COLLECT -B build
 
       - name: Create code style diff
-        run: |
-          cmake --build build --target clang_format_fix_all -j8
-          git diff > code_style_diff.diff
+        run: cmake --build build --target clang_format_fix_all -j8
 
       - name: suggester / clang-format
         if: failure() && startsWith(github.event_name, 'pull_request')

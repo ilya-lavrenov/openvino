@@ -22,7 +22,8 @@ class OPENVINO_RUNTIME_API Cancelled : public Exception {
  * busy with compute operation.
  * @ingroup ov_runtime_cpp_api
  */
-class OPENVINO_RUNTIME_API Busy : public Exception {
+class OPENVINO_RUNTIME_API Busy
+ : public Exception {
     using Exception::Exception;
 };
 
