@@ -17,7 +17,7 @@ lxml>=4.6.5
 MarkupSafe==2.1.1
 mistune==2.0.3
 packaging==20.9
-pluggy==0.13.1
+pluggy==1.0.0
 pydata-sphinx-theme==0.7.2
 Pygments==2.8.1
 pyparsing==2.4.7
