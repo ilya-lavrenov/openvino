@@ -224,7 +224,7 @@ endfunction()
 #
 
 if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 # to allows to override CMAKE_CXX_STANDARD from command line
