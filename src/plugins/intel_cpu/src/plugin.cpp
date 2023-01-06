@@ -55,7 +55,7 @@ namespace intel_cpu {
 
 static std::string getDeviceFullName() {
     std::string brand_string;
-#if !defined(__arm__) && !defined(_M_ARM) && !defined(__aarch64__) && !defined(_M_ARM64)
+#if !defined(__arm__) && !defined(_M_ARM) && !defined(__aarch64__) && !defined(_M_ARM64) && !defined(__EMSCRIPTEN__)
     const unsigned int addr_list[3] = { 0x80000002, 0x80000003, 0x80000004 };
     unsigned int regs[4];
     for (auto addr : addr_list) {
