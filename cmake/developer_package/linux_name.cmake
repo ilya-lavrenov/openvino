@@ -4,7 +4,8 @@
 
 include(target_flags)
 
-if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+# cmake needs to look at /etc files only when we build for Linux on Linux
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux" AND LINUX)
     function(get_linux_name res_var)
         if(EXISTS "/etc/lsb-release")
             # linux version detection using cat /etc/lsb-release

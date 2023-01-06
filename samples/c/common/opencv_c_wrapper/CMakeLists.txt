@@ -9,7 +9,7 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
 # create library
-add_library(${TARGET_NAME} SHARED ${HEADERS} ${SOURCES})
+add_library(${TARGET_NAME} STATIC ${HEADERS} ${SOURCES})
 
 # Find OpenCV components if exist
 find_package(OpenCV QUIET COMPONENTS core imgproc imgcodecs)

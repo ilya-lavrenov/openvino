@@ -10,6 +10,18 @@
 
 #include "openvino/c/openvino.h"
 
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE
+void sayHi() {
+  printf("Hi!\n");
+}
+
+EMSCRIPTEN_KEEPALIVE
+int daysInWeek() {
+  return 7;
+}
+
 /**
  * @brief Struct to store infer results
  */

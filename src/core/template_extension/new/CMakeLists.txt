@@ -11,7 +11,7 @@ find_package(OpenVINO REQUIRED)
 
 set(SRC identity.cpp ov_extension.cpp)
 
-add_library(${TARGET_NAME} MODULE ${SRC})
+add_library(${TARGET_NAME} STATIC ${SRC})
 
 target_compile_definitions(${TARGET_NAME} PRIVATE IMPLEMENT_OPENVINO_EXTENSION_API)
 target_link_libraries(${TARGET_NAME} PRIVATE openvino::runtime)

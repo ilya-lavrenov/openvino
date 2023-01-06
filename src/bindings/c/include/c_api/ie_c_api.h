@@ -22,13 +22,19 @@
 #ifndef IE_C_API_H
 #define IE_C_API_H
 
+#ifdef __EMSCRIPTEN__
+#    include <emscripten.h>
+#else
+#    define EMSCRIPTEN_KEEPALIVE
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
-#    define INFERENCE_ENGINE_C_API_EXTERN extern "C"
+#    define INFERENCE_ENGINE_C_API_EXTERN EMSCRIPTEN_KEEPALIVE extern "C"
 #else
-#    define INFERENCE_ENGINE_C_API_EXTERN
+#    define INFERENCE_ENGINE_C_API_EXTERN EMSCRIPTEN_KEEPALIVE
 #endif
 
 #if defined(OPENVINO_STATIC_LIBRARY) || defined(__GNUC__) && (__GNUC__ < 4)
