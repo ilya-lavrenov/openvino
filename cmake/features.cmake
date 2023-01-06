@@ -132,7 +132,7 @@ set(OPENVINO_EXTRA_MODULES "" CACHE STRING "Extra paths for extra modules to inc
 
 ie_dependent_option(ENABLE_TBB_RELEASE_ONLY "Only Release TBB libraries are linked to the OpenVINO Runtime binaries" ON "THREADING MATCHES TBB;LINUX" OFF)
 
-if(LINUX)
+if(CMAKE_HOST_LINUX AND LINUX)
     # Debian packages are enabled on Ubuntu systems
     # so, system TBB / pugixml can be tried for usage
     set(ENABLE_SYSTEM_LIBS_DEFAULT ON)

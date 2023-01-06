@@ -186,11 +186,12 @@ endif()
 #
 
 if(ENABLE_SAMPLES OR ENABLE_COMPILE_TOOL OR ENABLE_TESTS)
-    if(LINUX)
-        if(OV_OS_RHEL)
-            set(gflag_component nothreads_shared)
-        elseif(OV_OS_DEBIAN)
-            set(gflag_component nothreads_static)
+    # on Windows and macOS we don't use gflags, because will be dynamically linked
+    if(CMAKE_HOST_LINUX)
+        if(EXISTS /etc/debian_version)
+            set(gflags_component nothreads_static)
+        else()
+            set(gflags_component shared)
         endif()
         find_package(gflags QUIET OPTIONAL_COMPONENTS ${gflag_component})
     endif()

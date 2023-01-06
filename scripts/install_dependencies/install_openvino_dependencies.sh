@@ -192,13 +192,13 @@ elif [ "$os" == "centos7" ] || [ "$os" == "centos8" ] ||
     fi
 
     pkgs_dev=(gcc gcc-c++ make glibc libstdc++ libgcc cmake3 "json-devel.$arch" "zlib-devel.$arch" sudo)
-    
+
     if [ "$os" == "centos7" ] || [ "$os" == "amzn2" ] ; then
         pkgs_dev+=(pkgconfig)
     else
         pkgs_dev+=(pkgconf-pkg-config)
     fi
-    
+
     if [ "$os" == "rhel9.1" ] ; then
         pkgs_dev+=(curl-minimal)
     else
@@ -318,18 +318,18 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 
-iopt=
+iopt=()
 
 if [ "$os" == "debian9" ] || [ "$os" == "raspbian9" ] || [ "$os" == "ubuntu18.04" ] ||
    [ "$os" == "debian10" ] || [ "$os" == "raspbian10" ] || [ "$os" == "ubuntu20.04" ] || [ "$os" == "ubuntu20.10" ] || [ "$os" == "ubuntu21.04" ] ||
    [ "$os" == "debian11" ] || [ "$os" == "raspbian11" ] || [ "$os" == "ubuntu21.10" ] || [ "$os" == "ubuntu22.04" ] ||
    [ "$os" == "debian12" ] || [ "$os" == "raspbian12" ] || [ "$os" == "ubuntu22.10" ] ; then
 
-    [ -z "$interactive" ] && iopt="-y"
-    [ -n "$dry" ] && iopt="--dry-run"
+    [ -z "$interactive" ] && iopt+=(-y)
+    [ -n "$dry" ] && iopt+=(--dry-run)
     [ -n "$keepcache" ] && rm -f /etc/apt/apt.conf.d/docker-clean
 
-    apt-get update && apt-get install -y --no-install-recommends "$iopt" "${pkgs[@]}"
+    apt-get update && apt-get install --no-install-recommends "${iopt[@]}" "${pkgs[@]}"
 
 elif [ "$os" == "centos7" ] || [ "$os" == "centos8" ] ||
      [ "$os" == "rhel8" ] || [ "$os" == "rhel9.1" ] ||
@@ -337,12 +337,12 @@ elif [ "$os" == "centos7" ] || [ "$os" == "centos8" ] ||
      [ "$os" == "fedora36" ] || [ "$os" == "fedora38" ] ||
      [ "$os" == "almalinux8.7" ] || [ "$os" == "amzn2" ] ; then
 
-    [ -z "$interactive" ] && iopt="--assumeyes"
-    [ -n "$dry" ] && iopt="--downloadonly"
-    [ -n "$keepcache" ] && iopt="$iopt --setopt=keepcache=1"
-    [ -n "$extra" ] && [ ${#extra_repos[@]} -ne 0 ] && yum localinstall "$iopt" --nogpgcheck "${extra_repos[@]}"
+    [ -z "$interactive" ] && iopt+=(--assumeyes)
+    [ -n "$dry" ] && iopt+=(--downloadonly)
+    [ -n "$keepcache" ] && iopt+=(--setopt=keepcache=1)
+    [ -n "$extra" ] && [ ${#extra_repos[@]} -ne 0 ] && yum localinstall "${iopt[@]}" --nogpgcheck "${extra_repos[@]}"
 
-    yum install "$iopt" "${pkgs[@]}"
+    yum install "${iopt[@]}" "${pkgs[@]}"
 
 else
     echo "Internal script error: invalid OS (${os}) after check (package installation)" >&2
