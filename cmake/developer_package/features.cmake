@@ -63,7 +63,7 @@ ie_dependent_option (ENABLE_LIBRARY_VERSIONING "Enable libraries versioning" ON 
 
 ie_dependent_option (ENABLE_FASTER_BUILD "Enable build features (PCH, UNITY) to speed up build time" OFF "CMAKE_VERSION VERSION_GREATER_EQUAL 3.16" OFF)
 
-if(UNIX AND NOT ANDROID)
+if(UNIX AND NOT (ANDROID OR RISCV OR EMSCRIPTEN))
     set(STYLE_CHECKS_DEFAULT ON)
 else()
     set(STYLE_CHECKS_DEFAULT OFF)
