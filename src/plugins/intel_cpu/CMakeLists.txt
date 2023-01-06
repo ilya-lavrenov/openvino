@@ -39,7 +39,7 @@ elseif(AARCH64)
     add_definitions(-DOV_CPU_AARCH64)
     set(OV_CPU_AARCH64 ON)
 else()
-    message(FATAL_ERROR "Unsupported system processor ${CMAKE_SYSTEM_PROCESSOR}")
+    # message(FATAL_ERROR "Unsupported system processor ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
 if (ENABLE_CPU_DEBUG_CAPS)

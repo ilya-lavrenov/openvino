@@ -32,7 +32,7 @@
 # ifdef _WIN32
 #  include <intrin.h>
 #  include <windows.h>
-# elif !(__GNUC_PREREQ(4, 3) && !defined(__APPLE__))
+# elif !(__GNUC_PREREQ(4, 3) && !defined(__APPLE__)) && !defined(__EMSCRIPTEN__)
 #  include <cpuid.h>
 # endif
 #endif
