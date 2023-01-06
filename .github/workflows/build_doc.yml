@@ -94,7 +94,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: 'build/docs/_build'
+          publish_dir: './build/docs/_build'
           destination_dir: ${{ env.PR_NUMBER }}
 
       - name: Upload doxygen.log
@@ -137,3 +137,4 @@ jobs:
         with:
           name: openvino_docs_pytest
           path: build/docs/_artifacts/
+
