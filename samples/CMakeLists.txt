@@ -3,7 +3,7 @@
 #
 
 add_subdirectory(cpp)
-add_subdirectory(c)
+# add_subdirectory(c)
 
 # used by tests_deprecated
 if(TARGET format_reader)
