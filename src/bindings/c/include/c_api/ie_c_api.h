@@ -25,10 +25,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#ifdef __cplusplus
-#    define INFERENCE_ENGINE_C_API_EXTERN extern "C"
+#ifdef __EMSCRIPTEN__
+#    include <emscripten.h>
 #else
-#    define INFERENCE_ENGINE_C_API_EXTERN
+#    define EMSCRIPTEN_KEEPALIVE
+#endif
+
+#ifdef __cplusplus
+#    define INFERENCE_ENGINE_C_API_EXTERN EMSCRIPTEN_KEEPALIVE extern "C"
+#else
+#    define INFERENCE_ENGINE_C_API_EXTERN EMSCRIPTEN_KEEPALIVE
 #endif
 
 #if defined(OPENVINO_STATIC_LIBRARY) || defined(__GNUC__) && (__GNUC__ < 4)
