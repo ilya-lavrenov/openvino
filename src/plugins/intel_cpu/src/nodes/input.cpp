@@ -33,8 +33,9 @@ using namespace Xbyak;
 namespace ov {
 namespace intel_cpu {
 namespace node {
-namespace {
 
+#if defined(OV_CPU_X64)
+namespace {
 struct jit_has_subnormals_base : public jit_generator {
     DECLARE_CPU_JIT_AUX_FUNCTIONS(jit_has_subnormals_base)
 
@@ -229,9 +230,10 @@ jit_has_subnormals_base::fn_t jit_has_subnormals_function() {
 }
 
 }   // namespace
+#endif
 
-Input::Input(const std::shared_ptr<ngraph::Node>& op, const dnnl::engine& eng, WeightsSharing::Ptr &cache)
-        : Node(op, eng, cache, PassThroughShapeInferFactory()) {
+Input::Input(const std::shared_ptr<ngraph::Node>& op, const GraphContext::CPtr context)
+        : Node(op, context, PassThroughShapeInferFactory()) {
     if (!one_of(op->get_type_info(),
             v0::Parameter::get_type_info_static(),
             v0::Constant::get_type_info_static(),
@@ -283,6 +285,7 @@ void Input::cloneBlobIfRequired() {
 
     // The presence of subnormals is better to determined at IR read time.
     auto hasSubnormals = [&, this] () {
+#if defined(OV_CPU_X64)
         if (prec == InferenceEngine::Precision::FP32) {
             uint32_t const *u32data = constOp->get_data_ptr<uint32_t>();
 
@@ -318,6 +321,7 @@ void Input::cloneBlobIfRequired() {
                 }
             }
         }
+#endif
         return false;
     };
 
@@ -351,6 +355,7 @@ void Input::cloneBlobIfRequired() {
                 + "_" + ptr;
     };
 
+    auto weightCache = context->getWeightsCache();
     if (weightCache) {
         MemoryPtr ptr = *weightCache->findOrCreate(blobKey(), cloneBlob);
         memoryPtr = std::const_pointer_cast<const Memory>(ptr);
@@ -363,9 +368,12 @@ void Input::cloneBlobIfRequired() {
     }
 }
 
-Input::Input(const Shape& shape, const InferenceEngine::Precision &prc, const std::string &name,
-             const std::string &type, const dnnl::engine& eng, WeightsSharing::Ptr &cache)
-        : Node(type, name, eng, cache) {
+Input::Input(const Shape& shape,
+             const InferenceEngine::Precision& prc,
+             const std::string& name,
+             const std::string& type,
+             const GraphContext::CPtr context)
+    : Node(type, name, context) {
     constant = ConstantType::NoConst;
     if (getType() == Type::Input) {
         outputShapes.emplace_back(shape);
@@ -376,9 +384,8 @@ Input::Input(const Shape& shape, const InferenceEngine::Precision &prc, const st
     }
 }
 
-Input::Input(MemoryDescPtr memDesc, const std::string &name, const std::string &type,
-             const dnnl::engine &eng, WeightsSharing::Ptr &cache) :
-    Input(memDesc->getShape(), memDesc->getPrecision(), name, type, eng, cache) {
+Input::Input(MemoryDescPtr memDesc, const std::string& name, const std::string& type, const GraphContext::CPtr context)
+    : Input(memDesc->getShape(), memDesc->getPrecision(), name, type, context) {
     extMemDesc = memDesc;
 }
 

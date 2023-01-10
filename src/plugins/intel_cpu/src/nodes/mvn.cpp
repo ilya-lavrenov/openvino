@@ -106,8 +106,8 @@ bool MVN::isSupportedOperation(const std::shared_ptr<const ngraph::Node>& op, st
     return true;
 }
 
-MVN::MVN(const std::shared_ptr<ngraph::Node>& op, const dnnl::engine& eng, WeightsSharing::Ptr &cache)
-        : Node(op, eng, cache, NgraphShapeInferFactory(op, EMPTY_PORT_MASK)) {
+MVN::MVN(const std::shared_ptr<ngraph::Node>& op, const GraphContext::CPtr context)
+        : Node(op, context, NgraphShapeInferFactory(op, EMPTY_PORT_MASK)) {
     std::string errorMessage;
     if (!isSupportedOperation(op, errorMessage)) {
         IE_THROW(NotImplemented) << errorMessage;
@@ -188,7 +188,7 @@ void MVN::initSupportedPrimitiveDescriptors() {
         }
 
         auto factory = std::make_shared<MVNExecutorFactory>(mvnAttrs, srcMemoryDescs, dstMemoryDescs);
-        factory->setRuntimeCache(getRuntimeCache());
+        factory->setRuntimeCache(context->getParamsCache());
         supportedPrimitiveDescriptors.push_back({config, impl_desc_type::undef, factory});
     };
 
