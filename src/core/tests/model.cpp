@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2022 Intel Corporation
+// Copyright (C) 2018-2023 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -2039,4 +2039,16 @@ TEST(model, set_complex_meta_information) {
     f->set_rt_info(std::vector<float>{22.3f, 33.11f, 44.f}, "config", "model_parameters", "mean_values");
 
     check_rt_info(f);
+}
+
+TEST(model, create_model) {
+    EXPECT_NO_THROW(ov::Model({}, ""));
+    EXPECT_THROW(ov::Model(ov::ResultVector{nullptr}, {}, ""), ov::Exception);
+    EXPECT_NO_THROW(ov::Model(ov::ResultVector{}, ov::ParameterVector{}, ""));
+    EXPECT_THROW(ov::Model({nullptr}, {nullptr}, {nullptr}, {nullptr}, ""), ov::Exception);
+    EXPECT_THROW(ov::Model({nullptr}, {}, {}, {}, ""), ov::Exception);
+    EXPECT_THROW(ov::Model(ov::ResultVector{}, {nullptr}, {}, {}, ""), ov::Exception);
+    EXPECT_THROW(ov::Model(ov::ResultVector{}, {}, {nullptr}, {}, ""), ov::Exception);
+    EXPECT_THROW(ov::Model(ov::ResultVector{}, {}, {}, {nullptr}, ""), ov::Exception);
+    EXPECT_THROW(ov::Model(ov::OutputVector{ov::Output<ov::Node>{nullptr, 0}}, {}, {}, {}, ""), ov::Exception);
 }
