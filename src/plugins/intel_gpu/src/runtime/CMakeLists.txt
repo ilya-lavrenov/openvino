@@ -46,11 +46,13 @@ add_cpplint_target(${TARGET_NAME}_cpplint FOR_TARGETS ${TARGET_NAME})
 
 set_ie_threading_interface_for(${TARGET_NAME})
 
-target_link_libraries(${TARGET_NAME} PRIVATE
-    OpenCL::OpenCL
-    openvino::itt
-    inference_engine_plugin_api
-  )
+target_link_libraries(${TARGET_NAME}
+    PRIVATE
+        openvino::itt
+        inference_engine_plugin_api
+    PUBLIC
+        OpenCL::NewHeaders # should come before OpenCL::OpenCL
+        OpenCL::OpenCL)
 
 if(ENABLE_ONEDNN_FOR_GPU)
   target_link_libraries(${TARGET_NAME} PUBLIC onednn_gpu_tgt)

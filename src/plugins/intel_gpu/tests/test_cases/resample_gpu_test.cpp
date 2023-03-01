@@ -1720,8 +1720,7 @@ struct format_wrapper {
     static constexpr format fmt = FMT;
 };
 
-template <typename T>
-struct onnx_5d_format : public ::testing::Test {
+struct onnx_5d_format : public testing::TestWithParam<format> {
     onnx_5d_format() : shapes_and_attrs {// resize_downsample_scales_linear
                             {{1, 1, 3, 2, 4},
                              {2, 3, 4},
@@ -1793,8 +1792,12 @@ struct onnx_5d_format : public ::testing::Test {
              7.0,       7.333333,  7.6666675, 8.0},
             // resize_downsample_sizes_linear_pytorch_half_pixel
             {1.6666667, 7.0, 12.333333}}
-      , fmt{T::fmt}
+        , fmt(format::any)
     {}
+
+    void SetUp() override {
+        fmt = GetParam();
+    }
 
     struct ShapesAndAttrs {
         std::vector<int64_t> input_data_shape;
@@ -1810,14 +1813,7 @@ struct onnx_5d_format : public ::testing::Test {
     format fmt;
 };
 
-using cldnn_5d_formats = testing::Types<format_wrapper<format::bfzyx>,
-                                        format_wrapper<format::bs_fs_zyx_bsv16_fsv32>,
-                                        format_wrapper<format::bs_fs_zyx_bsv16_fsv16>,
-                                        format_wrapper<format::bs_fs_zyx_bsv32_fsv32>,
-                                        format_wrapper<format::bs_fs_zyx_bsv32_fsv16>>;
-TYPED_TEST_SUITE(onnx_5d_format,  cldnn_5d_formats);
-
-TYPED_TEST(onnx_5d_format, interpolate_linear_onnx5d)
+TEST_P(onnx_5d_format, interpolate_linear_onnx5d)
 {
     auto& engine = get_test_engine();
 
@@ -1860,6 +1856,13 @@ TYPED_TEST(onnx_5d_format, interpolate_linear_onnx5d)
         ++i;
     }
 }
+
+INSTANTIATE_TEST_SUITE_P(format, onnx_5d_format,
+    testing::Values(format::bfzyx,
+                    format::bs_fs_zyx_bsv16_fsv32,
+                    format::bs_fs_zyx_bsv16_fsv16,
+                    format::bs_fs_zyx_bsv32_fsv32,
+                    format::bs_fs_zyx_bsv32_fsv16));
 
 TEST(resample_gpu, interpolate_in1x1x2x4_linear_scale) {
     //  Input  : 1x1x2x4

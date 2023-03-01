@@ -7,9 +7,11 @@
 #include <vector>
 #include <memory>
 
-#include "openvino/runtime/intel_gpu/ocl/ocl.hpp"
 #include "openvino/runtime/core.hpp"
+#include "openvino/runtime/intel_gpu/ocl/ocl.hpp"
 #include "openvino/runtime/intel_gpu/properties.hpp"
+
+#ifndef __APPLE__
 
 #include <gpu/gpu_config.hpp>
 #include <remote_blob_tests/remote_blob_helpers.hpp>
@@ -1894,3 +1896,5 @@ TEST(OVRemoteContextGPU, smoke_RemoteContextSingleDevice) {
         check_contexts_are_same(default_ctx, core.get_default_context(CommonTestUtils::DEVICE_GPU));
     }
 }
+
+#endif

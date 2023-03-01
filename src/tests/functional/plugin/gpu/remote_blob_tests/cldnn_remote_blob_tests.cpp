@@ -8,6 +8,8 @@
 #include <memory>
 #include <thread>
 
+#ifndef __APPLE__
+
 #include <ie_compound_blob.h>
 
 #include <gpu/gpu_config.hpp>
@@ -797,3 +799,5 @@ INSTANTIATE_TEST_SUITE_P(smoke_RemoteBlob, TwoNets_Test,
     ::testing::Combine(::testing::ValuesIn(num_streams),
         ::testing::ValuesIn(num_requests)),
     TwoNets_Test::getTestCaseName);
+
+#endif

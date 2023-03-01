@@ -137,7 +137,7 @@ MVNKernel_bs_fs_yx_bsv32::MultiDispatchData MVNKernel_bs_fs_yx_bsv32::SetDefault
     auto max_sgs = max_slm / slm_per_sg;
 
     auto max_lws = std::min(max_wg, max_sgs * simd);
-    auto lws = std::max(std::min(items_num, max_lws) / simd, (size_t)1) * simd;
+    auto lws = std::max(std::min<std::uint64_t>(items_num, max_lws) / simd, 1ull) * simd;
 
     // TODO Check if larger number of work-groups does not provide benefit
     size_t item_groups = pref_work_groups;
@@ -156,7 +156,7 @@ MVNKernel_bs_fs_yx_bsv32::MultiDispatchData MVNKernel_bs_fs_yx_bsv32::SetDefault
 
         dispatchData.stage_1.itemsNum = item_groups;
 
-        size_t stage2_lws = std::max(std::min(item_groups, max_lws) / simd, (size_t)1) * simd;
+        size_t stage2_lws = std::max(std::min<std::uint64_t>(item_groups, max_lws) / simd, 1ull) * simd;
 
         dispatchData.stage_2.gws[0] = stage2_lws;
         dispatchData.stage_2.gws[1] = CeilDiv(params.outputs[0].Feature().v, fsv);

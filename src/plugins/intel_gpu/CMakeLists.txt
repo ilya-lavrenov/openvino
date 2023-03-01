@@ -24,7 +24,13 @@ if(ENABLE_GPU_DEBUG_CAPS)
   add_definitions(-DGPU_DEBUG_CONFIG=1)
 endif()
 
-set(INTEL_GPU_TARGET_OCL_VERSION "200" CACHE STRING "Target version of OpenCL which should be used by GPU plugin")
+if(APPLE)
+  set(cl_ver 120)
+else()
+  set(cl_ver 200)
+endif()
+
+set(INTEL_GPU_TARGET_OCL_VERSION "${cl_ver}" CACHE STRING "Target version of OpenCL which should be used by GPU plugin")
 
 add_definitions(-DCL_TARGET_OPENCL_VERSION=${INTEL_GPU_TARGET_OCL_VERSION})
 

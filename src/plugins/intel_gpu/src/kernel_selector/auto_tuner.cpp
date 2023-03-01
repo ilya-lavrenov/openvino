@@ -25,8 +25,10 @@
 #else
 #include <unistd.h>
 #include <limits.h>
-#include <link.h>
 #include <dlfcn.h>
+#ifndef __APPLE__
+#include <link.h>
+#endif
 #endif
 
 namespace kernel_selector {

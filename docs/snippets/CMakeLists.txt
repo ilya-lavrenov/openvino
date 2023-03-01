@@ -67,7 +67,9 @@ target_include_directories(${TARGET_NAME} PRIVATE "${OpenVINO_SOURCE_DIR}/src/in
                                                   "${OpenVINO_SOURCE_DIR}/src/core/template_extension/new/")
 
 if(TARGET OpenCL::OpenCL)
-    target_link_libraries(${TARGET_NAME} PRIVATE OpenCL::OpenCL)
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        OpenCL::NewHeaders # should come before OpenCL::OpenCL
+        OpenCL::OpenCL)
 
     if(libva_FOUND)
         target_compile_definitions(${TARGET_NAME} PRIVATE ENABLE_LIBVA)

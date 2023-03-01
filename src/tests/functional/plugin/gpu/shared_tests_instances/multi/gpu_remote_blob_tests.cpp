@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#ifndef __APPLE__
+
 #include <string>
 #include <vector>
 #include "gpu/gpu_config.hpp"
@@ -142,3 +144,5 @@ INSTANTIATE_TEST_SUITE_P(smoke_Multi_RemoteBlobInitializedWithoutGPU,
                          MultiDeviceMultipleGPU_Test,
                          ::testing::ValuesIn(multi_device_names_and_support_for_remote_blobs()),
                          MultiDeviceMultipleGPU_Test::getTestCaseName);
+
+#endif

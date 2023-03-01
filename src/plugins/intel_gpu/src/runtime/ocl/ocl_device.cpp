@@ -29,8 +29,10 @@
 #else
 #include <unistd.h>
 #include <limits.h>
-#include <link.h>
 #include <dlfcn.h>
+#ifndef __APPLE__
+#include <link.h>
+#endif
 #endif
 
 
@@ -92,6 +94,8 @@ int driver_dev_id() {
             }
         }
     }
+#else
+# pragma message("Unsupported OS")
 #endif
 
     auto id_itr = result.begin();
@@ -204,7 +208,7 @@ device_info init_device_info(const cl::Device& device) {
     bool device_uuid_supported = extensions.find("cl_khr_device_uuid ") != std::string::npos;
     if (device_uuid_supported) {
         static_assert(CL_UUID_SIZE_KHR == device_uuid::max_uuid_size, "");
-        info.uuid.val = device.getInfo<CL_DEVICE_UUID_KHR>();
+        // info.uuid.val = device.getInfo<CL_DEVICE_UUID_KHR>();
     } else {
         std::fill_n(std::begin(info.uuid.val), device_uuid::max_uuid_size, 0);
     }
@@ -226,9 +230,9 @@ device_info init_device_info(const cl::Device& device) {
         GPU_DEBUG_IF(debug_config->disable_onednn)
             info.supports_immad = false;
     } else if (nv_device_attr_supported) {
-        info.gfx_ver = {static_cast<uint16_t>(device.getInfo<CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV>()),
-                        static_cast<uint8_t>(device.getInfo<CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV>()),
-                        0};
+        // info.gfx_ver = {static_cast<uint16_t>(device.getInfo<CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV>()),
+        //                 static_cast<uint8_t>(device.getInfo<CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV>()),
+        //                 0};
     } else {
         info.gfx_ver = {0, 0, 0};
         info.device_id = driver_dev_id();

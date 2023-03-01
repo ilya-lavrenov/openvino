@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#ifndef __APPLE__
+
 #include <behavior/plugin/core_threading.hpp>
 #include <remote_blob_tests/remote_blob_helpers.hpp>
 
@@ -49,3 +51,5 @@ INSTANTIATE_TEST_SUITE_P(smoke_GPU, CoreThreadingTestsWithIterations,
                      testing::Values(20),
                      testing::Values(ModelClass::Default)),
     CoreThreadingTestsWithIterations::getTestCaseName);
+
+#endif

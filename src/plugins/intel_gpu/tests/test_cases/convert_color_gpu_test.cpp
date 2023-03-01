@@ -314,7 +314,7 @@ TEST(convert_color, nv12_to_rgb_two_planes_surface_u8) {
     image_format.image_channel_order = CL_R;
     image_format.image_channel_data_type = CL_UNORM_INT8;
     cl_image_desc image_desc = { CL_MEM_OBJECT_IMAGE2D, (size_t)width, (size_t)height, 0,
-                                 0, 0, 0, 0, 0, { nullptr } };
+                                 0, 0, 0, 0, 0, nullptr };
 
     cl_mem nv12_image_plane_y = clCreateImage(ocl_instance->_context.get(), CL_MEM_READ_WRITE, &image_format, &image_desc, nullptr, &err);
     checkStatus(err, "Creating nv12 image plane_y failed");
@@ -393,7 +393,7 @@ TEST(convert_color, nv12_to_rgb_single_plane_surface_u8) {
     image_format.image_channel_order = CL_R;
     image_format.image_channel_data_type = CL_UNORM_INT8;
     cl_image_desc image_desc = { CL_MEM_OBJECT_IMAGE2D, (size_t)width, (size_t)input_height, 0,
-                                 0, 0, 0, 0, 0, { nullptr } };
+                                 0, 0, 0, 0, 0, nullptr };
 
     cl_mem nv12_image = clCreateImage(ocl_instance->_context.get(), CL_MEM_READ_WRITE, &image_format, &image_desc, nullptr, &err);
     checkStatus(err, "Creating nv12 image failed");
@@ -549,7 +549,7 @@ void test_convert_color_i420_to_rgb_three_planes_surface_u8(bool is_caching_test
     image_format.image_channel_order = CL_R;
     image_format.image_channel_data_type = CL_UNORM_INT8;
     cl_image_desc image_desc = { CL_MEM_OBJECT_IMAGE2D, (size_t)width, (size_t)height, 0,
-                                 0, 0, 0, 0, 0, { nullptr } };
+                                 0, 0, 0, 0, 0, nullptr };
 
     cl_mem i420_image_plane_y = clCreateImage(ocl_instance->_context.get(), CL_MEM_READ_WRITE, &image_format, &image_desc, nullptr, &err);
     checkStatus(err, "Creating i420 image plane_y failed");

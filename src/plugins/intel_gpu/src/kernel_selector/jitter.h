@@ -48,6 +48,12 @@ template <>
 inline std::string GetTypeName<int32_t>() {
     return "int";
 }
+#ifdef __APPLE__
+template <>
+inline std::string GetTypeName<std::size_t>() {
+    return "size_t";
+}
+#endif
 template <>
 inline std::string GetTypeName<uint32_t>() {
     return "uint";

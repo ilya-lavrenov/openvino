@@ -1665,7 +1665,7 @@ std::pair<int64_t, int64_t> program::get_estimated_device_mem_usage() {
     memory_pool pool(get_engine());
     int64_t const_sum = 0;
 
-#ifdef __unix__
+#if defined(__linux__) || defined(__APPLE__)
     rlimit limit;
     int64_t cur_vmem = -1;
     if (getrlimit(RLIMIT_AS, &limit) == 0) {
@@ -1693,7 +1693,7 @@ std::pair<int64_t, int64_t> program::get_estimated_device_mem_usage() {
             host_alloc += out_size;
             continue;
         }
-        #ifdef __unix__
+#if defined(__linux__) || defined(__APPLE__)
         // Check whether the host mem allocation might exceed avialalbe system VRAM or physical memory
         // Temporal solution for linux OoO memory killer
         // TODO: Ultimate solution will be the "estimation without actual allocation" mechanism for this issue,
@@ -1707,7 +1707,7 @@ std::pair<int64_t, int64_t> program::get_estimated_device_mem_usage() {
                            << cur_vmem << ")" << std::endl;
             return {-1L, -1L};
         }
-        #endif
+#endif
 
         if (node->can_be_optimized())
             continue;

@@ -16,7 +16,7 @@
 #include "intel_gpu/primitives/mutable_data.hpp"
 #include "intel_gpu/primitives/data.hpp"
 
-#ifdef __linux__
+#ifndef _WIN32
 # include <dlfcn.h>
 #endif
 
@@ -143,7 +143,7 @@ Program::Program(InferenceEngine::CNNNetwork& network, cldnn::engine& engine, co
         (LPCSTR)CustomLayer::LoadFromFile,
         &nModule);
     GetModuleFileName(nModule, mpath, sizeof(mpath));
-#elif __linux__
+#else
     Dl_info dl_info;
     dladdr(reinterpret_cast<void *>(CustomLayer::LoadFromFile), &dl_info);
     const char* mpath = dl_info.dli_fname;

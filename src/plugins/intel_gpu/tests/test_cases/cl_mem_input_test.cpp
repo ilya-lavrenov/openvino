@@ -92,7 +92,7 @@ void start_cl_mem_check_2_inputs(bool is_caching_test) {
     image_format.image_channel_order = CL_R;
     image_format.image_channel_data_type = CL_UNORM_INT8;
     cl_image_desc image_desc = { CL_MEM_OBJECT_IMAGE2D, (size_t)width, (size_t)height, 0,
-                                 0, 0, 0, 0, 0, { nullptr } };
+                                 0, 0, 0, 0, 0, nullptr };
 
     cl_mem nv12_image_plane_y = clCreateImage(ocl_instance->_context.get(), CL_MEM_READ_WRITE, &image_format, &image_desc, nullptr, &err);
     checkStatus(err, "Creating nv12 image plane_y failed");
@@ -173,7 +173,7 @@ TEST(cl_mem_check, check_input) {
     image_format.image_channel_order = CL_R;
     image_format.image_channel_data_type = CL_UNORM_INT8;
     cl_image_desc image_desc = { CL_MEM_OBJECT_IMAGE2D, (size_t)width, (size_t)height, 0,
-        0, 0, 0, 0, 0, { nullptr } };
+        0, 0, 0, 0, 0, nullptr };
 
     cl_mem nv12_image_plane_y = clCreateImage(ocl_instance->_context.get(), CL_MEM_READ_WRITE, &image_format, &image_desc, nullptr, &err);
     checkStatus(err, "Creating nv12 image plane_y failed");
