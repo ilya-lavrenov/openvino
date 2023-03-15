@@ -62,8 +62,7 @@ bool is_virtual_device(const std::string& device_name) {
 ov::AnyMap clone_map(const ov::AnyMap& m) {
     ov::AnyMap rm;
     for (auto&& kvp : m) {
-        rm[kvp.first] = kvp.second.is<ov::AnyMap>() ? ov::Any(clone_map(kvp.second.as<ov::AnyMap>()))
-                                                    : kvp.second;
+        rm[kvp.first] = kvp.second.is<ov::AnyMap>() ? ov::Any(clone_map(kvp.second.as<ov::AnyMap>())) : kvp.second;
     }
 
     return rm;
