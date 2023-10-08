@@ -1,0 +1,16 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "name": "openvino-samples",
+    "version": "2023.2.0",
+    "maintainers": "OpenVINO Developers <openvino@intel.com>",
+    "summary": "OpenVINO samples project",
+    "homepage": "https://github.com/openvinotoolkit/openvino",
+    "documentation": "https://docs.openvino.ai/2023.1/openvino_docs_get_started_get_started_demos.html",
+    "license": "Apache-2.0",
+    "dependencies": [
+        "gflags",
+        "openvino",
+        "nlohmann-json",
+        "zlib"
+    ]
+}
