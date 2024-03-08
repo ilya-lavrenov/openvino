@@ -23,12 +23,12 @@ ov_add_test_target(
             ${TEST_COMMON_SOURCE_DIR}
         INCLUDES
             ${CMAKE_CURRENT_SOURCE_DIR}
-            $<TARGET_PROPERTY:openvino_intel_gpu_plugin,SOURCE_DIR>/include/
+            $<TARGET_PROPERTY:openvino_intel_gpu_plugin_xx,SOURCE_DIR>/include/
             ${TEST_COMMON_INCLUDE_DIR}
         DEFINES
             ${DEFINES}
         DEPENDENCIES
-            openvino_intel_gpu_plugin
+            openvino_intel_gpu_plugin_xx
         LINK_LIBRARIES
             funcSharedTests
             OpenCL::NewHeaders # should come before OpenCL::OpenCL

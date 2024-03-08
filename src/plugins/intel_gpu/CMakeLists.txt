@@ -6,7 +6,7 @@ if (NOT ENABLE_INTEL_GPU)
     return()
 endif()
 
-set (TARGET_NAME "openvino_intel_gpu_plugin")
+set (TARGET_NAME "openvino_intel_gpu_plugin_xx")
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     ov_add_compiler_flags(-Wno-strict-aliasing)

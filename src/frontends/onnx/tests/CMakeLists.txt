@@ -22,7 +22,7 @@ if (ENABLE_INTEL_CPU)
     if (ENABLE_STRICT_DEPENDENCIES)
         # For convinience add a runtime dependency to build along with this target.
         # Warning: Parallel build with -GNinja may not be efficient.
-        list(APPEND ONNX_TESTS_DEPENDENCIES openvino_intel_cpu_plugin)
+        list(APPEND ONNX_TESTS_DEPENDENCIES openvino_intel_cpu_plugin_xx)
     endif()
 endif()
 
@@ -31,7 +31,7 @@ if (ENABLE_INTEL_GPU)
     if (ENABLE_STRICT_DEPENDENCIES)
         # For convinience add a runtime dependency to build along with this target.
         # Warning: Parallel build with -GNinja may not be efficient.
-        list(APPEND ONNX_TESTS_DEPENDENCIES openvino_intel_gpu_plugin)
+        list(APPEND ONNX_TESTS_DEPENDENCIES openvino_intel_gpu_plugin_xx)
     endif()
 endif()
 

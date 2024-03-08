@@ -4,5 +4,5 @@
 
 #include "plugin.hpp"
 
-static const ov::Version version = {CI_BUILD_NUMBER, "openvino_hetero_plugin"};
+static const ov::Version version = {CI_BUILD_NUMBER, "openvino_hetero_plugin_xx"};
 OV_DEFINE_PLUGIN_CREATE_FUNCTION(ov::hetero::Plugin, version)

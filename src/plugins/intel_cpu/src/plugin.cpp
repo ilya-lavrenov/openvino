@@ -640,11 +640,11 @@ std::shared_ptr<ov::ICompiledModel> Engine::import_model(std::istream& networkMo
 using namespace ov::intel_cpu;
 
 #if defined(OPENVINO_ARCH_ARM) || defined(OPENVINO_ARCH_ARM64)
-static const ov::Version version = {CI_BUILD_NUMBER, "openvino_arm_cpu_plugin"};
+static const ov::Version version = {CI_BUILD_NUMBER, "openvino_arm_cpu_plugin_xx"};
 #elif defined(OPENVINO_ARCH_X86) || defined(OPENVINO_ARCH_X86_64)
-static const ov::Version version = {CI_BUILD_NUMBER, "openvino_intel_cpu_plugin"};
+static const ov::Version version = {CI_BUILD_NUMBER, "openvino_intel_cpu_plugin_xx"};
 #elif defined(OPENVINO_ARCH_RISCV64)
-static const ov::Version version = {CI_BUILD_NUMBER, "openvino_riscv_cpu_plugin"};
+static const ov::Version version = {CI_BUILD_NUMBER, "openvino_riscv_cpu_plugin_xx"};
 #else
 #error "Undefined system processor"
 #endif

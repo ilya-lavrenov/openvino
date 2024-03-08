@@ -21,17 +21,17 @@ if(ENABLE_OV_IR_FRONTEND)
 endif()
 
 if(ENABLE_HETERO)
-    list(APPEND DEPENDENCIES openvino_hetero_plugin)
+    list(APPEND DEPENDENCIES openvino_hetero_plugin_xx)
     list(APPEND COMPILE_DEFINITIONS ENABLE_HETERO)
 endif()
 
 if(ENABLE_AUTO AND ENABLE_MULTI)
-    list(APPEND DEPENDENCIES openvino_auto_plugin)
+    list(APPEND DEPENDENCIES openvino_auto_plugin_xx)
     list(APPEND COMPILE_DEFINITIONS ENABLE_AUTO)
 endif()
 
 if(ENABLE_AUTO_BATCH)
-    list(APPEND DEPENDENCIES openvino_auto_batch_plugin)
+    list(APPEND DEPENDENCIES openvino_auto_batch_plugin_xx)
     list(APPEND COMPILE_DEFINITIONS ENABLE_AUTO_BATCH)
 endif()
 

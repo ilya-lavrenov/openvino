@@ -22,13 +22,13 @@ inline const std::vector<ov::AnyMap> generate_ov_configs(const std::vector<ov::A
 
 inline const std::string get_plugin_lib_name_by_device(const std::string& deviceName) {
     const std::map<std::string, std::string> devices{
-            { "AUTO", "openvino_auto_plugin" },
-            { "HETERO", "openvino_hetero_plugin" },
-            { "BATCH", "openvino_auto_batch_plugin" },
-            { "MULTI", "openvino_auto_plugin" },
+            { "AUTO", "openvino_auto_plugin_xx" },
+            { "HETERO", "openvino_hetero_plugin_xx" },
+            { "BATCH", "openvino_auto_batch_plugin_xx" },
+            { "MULTI", "openvino_auto_plugin_xx" },
             { "NPU", "openvino_intel_npu_plugin" },
-            { "CPU", "openvino_intel_cpu_plugin" },
-            { "GPU", "openvino_intel_gpu_plugin" },
+            { "CPU", "openvino_intel_cpu_plugin_xx" },
+            { "GPU", "openvino_intel_gpu_plugin_xx" },
             { "TEMPLATE", "openvino_template_plugin" },
             { "NVIDIA", "openvino_nvidia_gpu_plugin" },
     };

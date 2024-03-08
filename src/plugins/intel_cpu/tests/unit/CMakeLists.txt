@@ -5,7 +5,7 @@
 set(TARGET_NAME ov_cpu_unit_tests)
 
 if(BUILD_SHARED_LIBS)
-    set (OBJ_LIB $<TARGET_OBJECTS:openvino_intel_cpu_plugin_obj>)
+    set (OBJ_LIB $<TARGET_OBJECTS:openvino_intel_cpu_plugin_xx_obj>)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -38,10 +38,10 @@ ov_add_test_target(
         ROOT ${CMAKE_CURRENT_SOURCE_DIR}
         INCLUDES
             PUBLIC
-                $<TARGET_PROPERTY:openvino_intel_cpu_plugin,SOURCE_DIR>/src
-                $<TARGET_PROPERTY:openvino_intel_cpu_plugin,SOURCE_DIR>/src/nodes
-                $<TARGET_PROPERTY:openvino_intel_cpu_plugin,SOURCE_DIR>/thirdparty/onednn
-                $<TARGET_PROPERTY:openvino_intel_cpu_plugin,SOURCE_DIR>/thirdparty/onednn/src
+                $<TARGET_PROPERTY:openvino_intel_cpu_plugin_xx,SOURCE_DIR>/src
+                $<TARGET_PROPERTY:openvino_intel_cpu_plugin_xx,SOURCE_DIR>/src/nodes
+                $<TARGET_PROPERTY:openvino_intel_cpu_plugin_xx,SOURCE_DIR>/thirdparty/onednn
+                $<TARGET_PROPERTY:openvino_intel_cpu_plugin_xx,SOURCE_DIR>/thirdparty/onednn/src
                 $<TARGET_PROPERTY:openvino::conditional_compilation,INTERFACE_INCLUDE_DIRECTORIES>
             PRIVATE
                 $<TARGET_PROPERTY:openvino::snippets,SOURCE_DIR>/include

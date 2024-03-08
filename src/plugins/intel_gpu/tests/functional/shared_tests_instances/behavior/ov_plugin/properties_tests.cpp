@@ -44,7 +44,7 @@ INSTANTIATE_TEST_SUITE_P(smoke_gpuCompileModelBehaviorTests,
 
 INSTANTIATE_TEST_SUITE_P(nightly_OVClassCommon,
                          OVBasicPropertiesTestsP,
-                         ::testing::Values(std::make_pair("openvino_intel_gpu_plugin", "GPU")));
+                         ::testing::Values(std::make_pair("openvino_intel_gpu_plugin_xx", "GPU")));
 
 // //
 // // OV Class GetMetric

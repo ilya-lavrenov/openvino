@@ -9,7 +9,7 @@ ov_add_test_target(
         ROOT ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDENCIES
             mock_engine
-            openvino_hetero_plugin
+            openvino_hetero_plugin_xx
         LINK_LIBRARIES
             openvino::runtime::dev
             gtest

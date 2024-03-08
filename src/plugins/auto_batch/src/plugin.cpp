@@ -105,7 +105,7 @@ void Plugin::set_property(const ov::AnyMap& properties) {
     }
 }
 
-static const ov::Version version = {CI_BUILD_NUMBER, "openvino_auto_batch_plugin"};
+static const ov::Version version = {CI_BUILD_NUMBER, "openvino_auto_batch_plugin_xx"};
 OV_DEFINE_PLUGIN_CREATE_FUNCTION(Plugin, version)
 
 Plugin::Plugin() {

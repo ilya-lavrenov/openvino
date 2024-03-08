@@ -5,7 +5,7 @@
 set(TARGET_NAME ov_hetero_unit_tests)
 
 if(BUILD_SHARED_LIBS)
-    set (OBJ_LIB $<TARGET_OBJECTS:openvino_hetero_plugin_obj>)
+    set (OBJ_LIB $<TARGET_OBJECTS:openvino_hetero_plugin_xx_obj>)
 endif()
 
 ov_add_test_target(
@@ -15,7 +15,7 @@ ov_add_test_target(
             ${CMAKE_CURRENT_SOURCE_DIR}
         INCLUDES
             PUBLIC
-                $<TARGET_PROPERTY:openvino_hetero_plugin,SOURCE_DIR>/src
+                $<TARGET_PROPERTY:openvino_hetero_plugin_xx,SOURCE_DIR>/src
             ${CMAKE_CURRENT_SOURCE_DIR}
         OBJECT_FILES
             ${OBJ_LIB}

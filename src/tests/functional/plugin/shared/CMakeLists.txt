@@ -13,15 +13,15 @@ list(APPEND LINK_LIBRARIES_PRIVATE
         openvino::runtime::dev)
 
 if(ENABLE_HETERO)
-    list(APPEND DEPENDENCIES openvino_hetero_plugin)
+    list(APPEND DEPENDENCIES openvino_hetero_plugin_xx)
 endif()
 
 if(ENABLE_AUTO OR ENABLE_MULTI)
-    list(APPEND DEPENDENCIES openvino_auto_plugin)
+    list(APPEND DEPENDENCIES openvino_auto_plugin_xx)
 endif()
 
 if(ENABLE_AUTO_BATCH)
-    list(APPEND DEPENDENCIES openvino_auto_batch_plugin)
+    list(APPEND DEPENDENCIES openvino_auto_batch_plugin_xx)
 endif()
 
 if(ENABLE_TEMPLATE)

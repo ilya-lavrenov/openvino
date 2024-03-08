@@ -5,7 +5,7 @@
 set(TARGET_NAME ov_auto_func_tests)
 
 if(ENABLE_AUTO_BATCH)
-    list(APPEND DEPENDENCIES openvino_auto_batch_plugin)
+    list(APPEND DEPENDENCIES openvino_auto_batch_plugin_xx)
     list(APPEND COMPILE_DEFINITIONS ENABLE_AUTO_BATCH)
 endif()
 

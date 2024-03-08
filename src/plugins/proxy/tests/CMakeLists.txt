@@ -13,12 +13,12 @@ set(DEPENDENCIES
 set(COMPILE_DEFINITIONS "CI_BUILD_NUMBER=\"mock_version\"")
 
 if(ENABLE_AUTO_BATCH)
-    list(APPEND DEPENDENCIES openvino_auto_batch_plugin)
+    list(APPEND DEPENDENCIES openvino_auto_batch_plugin_xx)
     list(APPEND COMPILE_DEFINITIONS ENABLE_AUTO_BATCH)
 endif()
 
 if(ENABLE_HETERO)
-    list(APPEND DEPENDENCIES openvino_hetero_plugin)
+    list(APPEND DEPENDENCIES openvino_hetero_plugin_xx)
     list(APPEND COMPILE_DEFINITIONS HETERO_ENABLED)
 endif()
 

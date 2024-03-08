@@ -6,7 +6,7 @@ if(NOT ENABLE_INTEL_CPU)
     return()
 endif()
 
-set(TARGET_NAME "openvino_intel_cpu_plugin")
+set(TARGET_NAME "openvino_intel_cpu_plugin_xx")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # C4267, 4244 issues from oneDNN headers conversion from 'XXX' to 'YYY', possible loss of data
@@ -119,9 +119,9 @@ ov_add_plugin(NAME ${TARGET_NAME}
 
 # give a different file name depending on target platform architecture
 if(ARM OR AARCH64)
-    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "openvino_arm_cpu_plugin")
+    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "openvino_arm_cpu_plugin_xx")
 elseif(RISCV64)
-    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "openvino_riscv_cpu_plugin")
+    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME "openvino_riscv_cpu_plugin_xx")
 endif()
 
 ov_mark_target_as_cc(${TARGET_NAME})

@@ -4,9 +4,9 @@
 
 set(TARGET_NAME "ov_tensorflow_frontend_tests")
 
-list(APPEND TF_TESTS_DEPENDENCIES tensorflow_test_models tensorflow_fe_standalone_build_test openvino_intel_cpu_plugin)
+list(APPEND TF_TESTS_DEPENDENCIES tensorflow_test_models tensorflow_fe_standalone_build_test openvino_intel_cpu_plugin_xx)
 if (NOT ENABLE_INTEL_CPU)
-    list(REMOVE_ITEM TF_TESTS_DEPENDENCIES openvino_intel_cpu_plugin)
+    list(REMOVE_ITEM TF_TESTS_DEPENDENCIES openvino_intel_cpu_plugin_xx)
     set(EXCLUDED_TESTS ${CMAKE_CURRENT_SOURCE_DIR}/compilation.cpp)
 endif()
 

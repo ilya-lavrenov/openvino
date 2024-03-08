@@ -86,7 +86,7 @@ endif()
 
 # Fuzzy tests for PaddlePaddle use IE_CPU engine
 if(ENABLE_INTEL_CPU)
-    add_dependencies(${TARGET_NAME} openvino_intel_cpu_plugin)
+    add_dependencies(${TARGET_NAME} openvino_intel_cpu_plugin_xx)
 endif()
 
 add_subdirectory(standalone_build)

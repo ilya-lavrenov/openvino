@@ -6,7 +6,7 @@ if (NOT ENABLE_HETERO)
     return()
 endif()
 
-set(TARGET_NAME openvino_hetero_plugin)
+set(TARGET_NAME openvino_hetero_plugin_xx)
 
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)

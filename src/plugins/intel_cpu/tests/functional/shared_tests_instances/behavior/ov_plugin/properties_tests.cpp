@@ -11,7 +11,7 @@ namespace {
 
 INSTANTIATE_TEST_SUITE_P(smoke_OVClassCommon,
                          OVBasicPropertiesTestsP,
-                         ::testing::Values(std::make_pair("openvino_intel_cpu_plugin", "CPU")));
+                         ::testing::Values(std::make_pair("openvino_intel_cpu_plugin_xx", "CPU")));
 
 auto cpu_properties = []() -> std::vector<ov::AnyMap> {
     std::vector<ov::AnyMap> properties = {
