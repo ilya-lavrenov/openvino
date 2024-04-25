@@ -68,12 +68,7 @@ protected:
 
     event::ptr execute_impl(const std::vector<event::ptr>& /* events */,
                             typed_primitive_inst<PType>& instance) override {
-        auto& network = instance.get_network();
-        auto& stream = network.get_stream();
-        auto net_id = network.get_id();
         event::ptr event;
-
-
         return event;
     }
 
