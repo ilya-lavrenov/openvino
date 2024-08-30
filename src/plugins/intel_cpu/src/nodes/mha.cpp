@@ -671,77 +671,77 @@ private:
 #endif // OPENVINO_ARCH_X86_64
 
 bool MHA::isSupportedOperation(const std::shared_ptr<const ov::Node>& op, std::string& errorMessage) noexcept {
-    try {
-        const auto mha = std::dynamic_pointer_cast<const MHANode>(op);
-        if (!mha) {
-            errorMessage = "Only MHA from CPU internal opset is supported";
-            return false;
-        }
+    // try {
+    //     const auto mha = std::dynamic_pointer_cast<const MHANode>(op);
+    //     if (!mha) {
+    //         errorMessage = "Only MHA from CPU internal opset is supported";
+    //         return false;
+    //     }
 
-        if (isDynamicNgraphNode(op)) {
-            errorMessage = "Doesn't support op with dynamic shapes";
-            return false;
-        }
+    //     if (isDynamicNgraphNode(op)) {
+    //         errorMessage = "Doesn't support op with dynamic shapes";
+    //         return false;
+    //     }
 
-        bool supportedPrecisions = true;
-        if (!(mha->get_input_element_type(0) == element::i8 &&
-              mha->get_input_element_type(1) == element::f32 &&
-              mha->get_input_element_type(3) == element::f32)) {
-            if (!one_of(mha->get_input_element_type(0), element::f32, element::bf16, element::i8)) {
-                supportedPrecisions = false;
-            }
+    //     bool supportedPrecisions = true;
+    //     if (!(mha->get_input_element_type(0) == element::i8 &&
+    //           mha->get_input_element_type(1) == element::f32 &&
+    //           mha->get_input_element_type(3) == element::f32)) {
+    //         if (!one_of(mha->get_input_element_type(0), element::f32, element::bf16, element::i8)) {
+    //             supportedPrecisions = false;
+    //         }
 
-            if (mha->get_input_element_type(0) != mha->get_input_element_type(1) ||
-                    mha->get_input_element_type(0) != mha->get_input_element_type(3)) {
-                supportedPrecisions = false;
-            }
-        } else {
-            if (mha->get_fq0_output_type() != mha->get_input_element_type(0))
-               supportedPrecisions = false;
-        }
+    //         if (mha->get_input_element_type(0) != mha->get_input_element_type(1) ||
+    //                 mha->get_input_element_type(0) != mha->get_input_element_type(3)) {
+    //             supportedPrecisions = false;
+    //         }
+    //     } else {
+    //         if (mha->get_fq0_output_type() != mha->get_input_element_type(0))
+    //            supportedPrecisions = false;
+    //     }
 
-        if (!mha->get_fq_scales1().empty() && mha->get_fq1_output_type() != element::i8) {
-            supportedPrecisions = false;
-        }
+    //     if (!mha->get_fq_scales1().empty() && mha->get_fq1_output_type() != element::i8) {
+    //         supportedPrecisions = false;
+    //     }
 
-        if (mha->get_input_element_type(3) == element::i8) {
-            if (!one_of(mha->get_fq2_output_type(), element::u8, element::i8)) {
-                supportedPrecisions = false;
-            }
-        }
+    //     if (mha->get_input_element_type(3) == element::i8) {
+    //         if (!one_of(mha->get_fq2_output_type(), element::u8, element::i8)) {
+    //             supportedPrecisions = false;
+    //         }
+    //     }
 
-        if (!supportedPrecisions) {
-            errorMessage = "Doesn't support provided input precisions";
-            return false;
-        }
+    //     if (!supportedPrecisions) {
+    //         errorMessage = "Doesn't support provided input precisions";
+    //         return false;
+    //     }
 
-        if (!one_of(mha->get_output_element_type(0), element::f32, element::bf16, element::i8, element::u8)) {
-            errorMessage = "Doesn't support provided output precision";
-            return false;
-        }
+    //     if (!one_of(mha->get_output_element_type(0), element::f32, element::bf16, element::i8, element::u8)) {
+    //         errorMessage = "Doesn't support provided output precision";
+    //         return false;
+    //     }
 
-        if (mha->get_input_element_type(0) == element::f32 && !mayiuse(avx512_core)) {
-            errorMessage = "Doesn't support f32 execution precision on targets w/o avx512_core support";
-            return false;
-        }
+    //     if (mha->get_input_element_type(0) == element::f32 && !mayiuse(avx512_core)) {
+    //         errorMessage = "Doesn't support f32 execution precision on targets w/o avx512_core support";
+    //         return false;
+    //     }
 
-        if (mha->get_input_element_type(0) == element::bf16 && !mayiuse(avx512_core_bf16)) {
-            errorMessage = "Doesn't support bf16 execution precision on targets w/o avx512_core_bf16 support";
-            return false;
-        }
+    //     if (mha->get_input_element_type(0) == element::bf16 && !mayiuse(avx512_core_bf16)) {
+    //         errorMessage = "Doesn't support bf16 execution precision on targets w/o avx512_core_bf16 support";
+    //         return false;
+    //     }
 
-        if (mha->get_input_element_type(0) == element::i8 && !mayiuse(avx512_core_vnni)) {
-            errorMessage = "Doesn't support i8 execution precision on targets w/o avx512_core_vnni support";
-            return false;
-        }
+    //     if (mha->get_input_element_type(0) == element::i8 && !mayiuse(avx512_core_vnni)) {
+    //         errorMessage = "Doesn't support i8 execution precision on targets w/o avx512_core_vnni support";
+    //         return false;
+    //     }
 
-        if (mha->get_input_shape(0).size() != 4) {
-            errorMessage = "Doesn't support inputs with rank != 4";
-            return false;
-        }
-    } catch (...) {
-        return false;
-    }
+    //     if (mha->get_input_shape(0).size() != 4) {
+    //         errorMessage = "Doesn't support inputs with rank != 4";
+    //         return false;
+    //     }
+    // } catch (...) {
+    //     return false;
+    // }
 
     return true;
 }
@@ -753,14 +753,14 @@ MHA::MHA(const std::shared_ptr<ov::Node>& op, const GraphContext::CPtr context)
         OPENVINO_THROW_NOT_IMPLEMENTED(errorMessage);
     }
 
-    const auto mha = std::dynamic_pointer_cast<const MHANode>(op);
-    mulScales = mha->get_mul_scales();
-    isMulFirst = mha->get_is_mul_first();
-    fqScales0 = mha->get_fq_scales0();
-    fqScales1 = mha->get_fq_scales1();
-    fqScales2 = mha->get_fq_scales2();
-    fqScales3 = mha->get_fq_scales3();
-    fqPrc2 = mha->get_fq2_output_type();
+    // const auto mha = std::dynamic_pointer_cast<const MHANode>(op);
+    // mulScales = mha->get_mul_scales();
+    // isMulFirst = mha->get_is_mul_first();
+    // fqScales0 = mha->get_fq_scales0();
+    // fqScales1 = mha->get_fq_scales1();
+    // fqScales2 = mha->get_fq_scales2();
+    // fqScales3 = mha->get_fq_scales3();
+    // fqPrc2 = mha->get_fq2_output_type();
 }
 
 void MHA::initSupportedPrimitiveDescriptors() {

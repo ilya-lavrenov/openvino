@@ -82,8 +82,6 @@ private:
     OP_EXTENSION(ov::op::internal::AUGRUSequence)                           \
     OP_EXTENSION(ov::op::internal::NmsStaticShapeIE<ov::op::v8::MatrixNms>) \
     OP_EXTENSION(ov::op::internal::RoPE)                                    \
-    OP_EXTENSION_X64(ov::intel_cpu::MHANode)                                \
-    OP_EXTENSION_X64(ov::intel_cpu::InteractionNode)                        \
     OP_EXTENSION_X64(ov::intel_cpu::LLMMLPNode)                             \
     OP_EXTENSION_X64(ov::intel_cpu::QKVProjectionNode)                      \
     OP_EXTENSION_X64(ov::intel_cpu::ScaledDotProductAttentionWithKVCache)   \

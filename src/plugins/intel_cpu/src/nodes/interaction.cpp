@@ -170,12 +170,12 @@ Interaction::Interaction(const std::shared_ptr<ov::Node>& op, const GraphContext
         OPENVINO_THROW_NOT_IMPLEMENTED(errorMessage);
     }
     errorPrefix = "Interaction node with name '" + getName() + "'";
-    const auto interaction = std::dynamic_pointer_cast<const InteractionNode>(op);
-    const std::vector<float>& scales = interaction->get_output_scales();
-    if (!scales.empty()) {
-        fqScales = scales;
-        outputDataType  = interaction->get_output_element_type(0);
-    }
+    // const auto interaction = std::dynamic_pointer_cast<const InteractionNode>(op);
+    // const std::vector<float>& scales = interaction->get_output_scales();
+    // if (!scales.empty()) {
+    //     fqScales = scales;
+    //     outputDataType  = interaction->get_output_element_type(0);
+    // }
 }
 
 void Interaction::initSupportedPrimitiveDescriptors() {
@@ -363,11 +363,11 @@ bool Interaction::isExecutable() const {
 bool Interaction::isSupportedOperation(const std::shared_ptr<const ov::Node>& op,
         std::string& errorMessage) noexcept {
     try {
-        const auto interaction = std::dynamic_pointer_cast<const InteractionNode>(op);
-        if (!interaction) {
-            errorMessage = "Only Interaction operation is supported";
-            return false;
-        }
+        // const auto interaction = std::dynamic_pointer_cast<const InteractionNode>(op);
+        // if (!interaction) {
+        //     errorMessage = "Only Interaction operation is supported";
+        //     return false;
+        // }
     } catch (...) {
         return false;
     }
