@@ -109,7 +109,7 @@ inline void ForceExit() {
               << "\tDue to the driver bug any subsequent OpenCL API call will cause application hang, "
               << "so GPU plugin can't finish correctly.\n"
               << "\tPlease try to update the driver or reduce memory consumption "
-              << "(use smaller batch size, less streams, lower precision, etc)"
+              << "(use smaller batch size, less streams, lower precision, etc) "
               << "to avoid CL_OUT_OF_RESOURCES exception" << std::endl;
     std::_Exit(-1);
 }
